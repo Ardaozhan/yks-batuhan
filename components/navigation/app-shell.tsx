@@ -10,10 +10,13 @@ import {
   BookOpen,
   CalendarDays,
   CheckCircle2,
+  ChevronRight,
   CirclePlus,
   ListTodo,
+  Menu,
   Plus,
   Settings,
+  Shield,
   Sparkles,
   UserRound,
   X,
@@ -37,6 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [quickOpen, setQuickOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
 
   useEffect(() => {
@@ -154,11 +158,127 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={19} />
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
+
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Tüm Menüyü Aç"
+            className="app-focus flex h-10 w-10 items-center justify-center rounded-full border border-[var(--outline)] bg-white text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
+          >
+            <Menu size={20} />
+          </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="md:ml-[280px]">{children}</main>
+      <main className="md:ml-[280px] pb-28 md:pb-12 min-h-screen">{children}</main>
+
+      {/* Mobile Slide-Over Menu Drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs md:hidden animate-in fade-in"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="flex h-full w-[85%] max-w-[320px] flex-col justify-between bg-white p-5 shadow-2xl animate-in slide-in-from-right duration-250"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              {/* Drawer Top */}
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--outline)]">
+                <div className="flex items-center gap-2.5">
+                  <div suppressHydrationWarning className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-sm font-bold text-[var(--primary)]">
+                    {profile.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p suppressHydrationWarning className="font-display text-sm font-bold text-[var(--ink)]">
+                      {profile.name}
+                    </p>
+                    <p suppressHydrationWarning className="text-xs text-[var(--muted)] truncate max-w-[170px]">
+                      {profile.targetDepartment || "Hedef Belirle"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-full p-2 text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)]"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Drawer Links */}
+              <nav className="mt-4 space-y-1">
+                {[
+                  { href: "/today", label: "Bugün (Çalışma Alanı)", icon: CalendarDays },
+                  { href: "/planner", label: "AI Planlayıcı", icon: ListTodo, badge: "AI" },
+                  { href: "/analytics", label: "Analiz & Raporlar", icon: BarChart3, badge: "AI" },
+                  { href: "/subjects", label: "Dersler & Müfredat", icon: BookOpen },
+                  { href: "/exams", label: "Deneme Sınavları", icon: Award },
+                  { href: "/coach", label: "AI Koçum", icon: Sparkles, badge: "AI" },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex min-h-[44px] items-center justify-between rounded-xl px-3.5 text-xs font-semibold transition-all ${
+                        active
+                          ? "bg-[var(--surface-ai)] text-[var(--primary)] font-bold border border-[#d7e8cb]"
+                          : "text-[var(--ink)] hover:bg-[#fbf9f5]"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <Icon size={18} className={active ? "text-[var(--primary)]" : "text-[var(--muted)]"} />
+                        <span>{item.label}</span>
+                      </span>
+                      {item.badge ? (
+                        <span className="rounded bg-[var(--primary)] text-white text-[10px] px-1.5 py-0.2 font-bold">
+                          {item.badge}
+                        </span>
+                      ) : (
+                        <ChevronRight size={14} className="text-[var(--muted)]" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Drawer Bottom (Settings, Profile, Admin) */}
+            <div className="space-y-1 border-t border-[var(--outline)] pt-4">
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex min-h-[44px] items-center gap-3 rounded-xl px-3.5 text-xs font-semibold text-[var(--muted)] hover:bg-[#fbf9f5] hover:text-[var(--ink)]"
+              >
+                <UserRound size={18} />
+                <span>Profilim</span>
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex min-h-[44px] items-center gap-3 rounded-xl px-3.5 text-xs font-semibold text-[var(--muted)] hover:bg-[#fbf9f5] hover:text-[var(--ink)]"
+              >
+                <Settings size={18} />
+                <span>Ayarlar</span>
+              </Link>
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex min-h-[44px] items-center justify-between rounded-xl border border-amber-200 bg-amber-50/60 px-3.5 text-xs font-semibold text-amber-900 mt-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Shield size={16} className="text-amber-700" />
+                  <span>Yönetici Paneli</span>
+                </span>
+                <ChevronRight size={14} className="text-amber-700" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation Bar */}
       <nav

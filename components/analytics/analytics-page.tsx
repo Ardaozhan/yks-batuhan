@@ -277,7 +277,7 @@ export function AnalyticsPage() {
       </header>
 
       {/* Top Metrics Row */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5 mb-8">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-8">
         <Metric
           icon={<Timer size={20} />}
           label="Çalışma Süresi"
@@ -499,7 +499,7 @@ export function AnalyticsPage() {
               <div className="mt-8 flex h-48 items-end justify-between gap-3 border-b border-[var(--outline)] pb-2 px-2">
                 {weeklyMinutes.map((item, index) => (
                   <div key={index} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5 group">
-                    <span className="text-[10px] font-semibold text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] font-semibold text-[var(--muted)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       {Math.round(item.mins / 60)}s
                     </span>
                     <div
@@ -588,7 +588,7 @@ export function AnalyticsPage() {
                 const heightPercent = Math.min(100, Math.round((net / maxNet) * 100));
                 return (
                   <div key={exam.id} className="flex flex-1 flex-col items-center gap-2 group">
-                    <span className="text-xs font-semibold text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-semibold text-[var(--primary)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       {formatNet(net)}
                     </span>
                     <div

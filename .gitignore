@@ -45,3 +45,6 @@ next-env.d.ts
 *.err*
 stitch_yks_odak*
 yks-master-init
+
+.vercel
+.env*

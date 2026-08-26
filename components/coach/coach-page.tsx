@@ -369,7 +369,7 @@ export function CoachPage() {
                 key={mKey}
                 type="button"
                 onClick={() => setMode(mKey)}
-                className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all active:scale-95 ${
+                className={`flex flex-col items-start p-2.5 sm:p-3 rounded-xl border text-left transition-all active:scale-95 touch-manipulation min-h-[54px] ${
                   isSelected
                     ? "border-[var(--primary)] bg-[var(--surface-ai)] shadow-xs"
                     : "border-[var(--outline)] bg-white hover:border-[var(--primary)]"
@@ -392,9 +392,9 @@ export function CoachPage() {
       </div>
 
       {/* Main Chat Box */}
-      <div className="paper-card flex-1 flex flex-col justify-between p-4 md:p-6 bg-white overflow-hidden shadow-xs">
+      <div className="paper-card flex-1 flex flex-col justify-between p-3.5 sm:p-4 md:p-6 bg-white overflow-hidden shadow-xs">
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto space-y-6 pr-1 max-h-[58vh]">
+        <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pr-1 max-h-[52vh] sm:max-h-[58vh]">
           {messages.map((m) => (
             <div key={m.id} className="space-y-3">
               {m.sender === "user" ? (

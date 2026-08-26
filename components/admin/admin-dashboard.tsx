@@ -181,7 +181,7 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex flex-wrap gap-2 pt-4">
+            <div className="flex gap-2 pt-4 overflow-x-auto pb-2 scrollbar-none flex-nowrap sm:flex-wrap">
               {[
                 { key: "tasks", label: "Bugünün Görevleri", count: tasks.length, icon: Calendar },
                 { key: "curriculum", label: "Müfredat & Konular", count: `${completedTopicsCount}/${topics.length}`, icon: BookOpen },
@@ -195,7 +195,7 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as TabKey)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
+                    className={`inline-flex shrink-0 min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition-all touch-manipulation active:scale-95 ${
                       isSelected
                         ? "bg-[var(--primary)] text-white shadow-xs"
                         : "border border-[var(--outline)] bg-white text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[#fbf9f5]"

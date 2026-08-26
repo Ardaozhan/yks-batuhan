@@ -463,11 +463,12 @@ function TaskCard({
           {task.duration}
         </span>
 
-        {/* Delete on hover */}
+        {/* Delete on mobile (always accessible) and desktop hover */}
         <button
           onClick={onDelete}
           title="Görevi sil"
-          className="text-[var(--muted)] opacity-0 group-hover:opacity-100 hover:text-[var(--danger)] transition-opacity p-1"
+          aria-label="Görevi sil"
+          className="text-[var(--muted)] opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:text-[var(--danger)] active:text-[var(--danger)] transition-opacity p-2 -mr-1 touch-manipulation"
         >
           <Trash2 size={16} />
         </button>
