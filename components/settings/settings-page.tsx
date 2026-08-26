@@ -20,12 +20,10 @@ import {
   getTopics,
   updateProfile,
 } from "@/lib/study-store";
-import { useTheme } from "@/components/theme/theme-provider";
 import { toast } from "@/components/ui/toaster";
-import { Moon, Sun, Monitor, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 
 export function SettingsPage() {
-  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState({
     name: defaultProfile.name,
     targetDepartment: defaultProfile.targetDepartment,
@@ -213,39 +211,6 @@ export function SettingsPage() {
                 />
               </label>
             ))}
-          </div>
-        </section>
-
-        {/* Section 2.5: Theme Settings */}
-        <section className="paper-card p-6 bg-white shadow-xs">
-          <h2 className="font-display text-lg font-bold text-[var(--ink)] flex items-center gap-2 mb-4">
-            <Sun size={18} className="text-[var(--primary)]" />
-            <span>Görünüm ve Tema</span>
-          </h2>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { key: "light", label: "Açık Tema", icon: Sun },
-              { key: "dark", label: "Koyu Tema", icon: Moon },
-              { key: "system", label: "Sistem", icon: Monitor },
-            ].map((t) => {
-              const Icon = t.icon;
-              const isSelected = theme === t.key;
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => setTheme(t.key as "light" | "dark" | "system")}
-                  className={`flex flex-col items-center justify-center gap-2 rounded-xl p-4 border text-xs font-bold transition-all ${
-                    isSelected
-                      ? "border-[var(--primary)] bg-[var(--surface-ai)] text-[var(--primary)] shadow-xs ring-2 ring-[var(--primary)]/30"
-                      : "border-[var(--outline)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)]"
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span>{t.label}</span>
-                </button>
-              );
-            })}
           </div>
         </section>
 

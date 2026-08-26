@@ -1,17 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbf9f5" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f130e" },
-  ],
+  themeColor: "#fbf9f5",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -48,17 +44,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="tr"
-      suppressHydrationWarning
       className={`${geist.variable} ${inter.variable}`}
     >
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        {children}
+        <Toaster />
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -12,17 +12,14 @@ import {
   ChevronRight,
   Command,
   ListTodo,
-  Moon,
   Plus,
   Search,
   Settings,
   Shield,
   Sparkles,
-  Sun,
   UserRound,
   X,
 } from "lucide-react";
-import { useTheme } from "../theme/theme-provider";
 import { getSubjects, getTopics } from "@/lib/study-store";
 
 interface CommandItem {
@@ -44,7 +41,6 @@ export function CommandMenu({
   onOpenQuickAdd?: () => void;
 }) {
   const router = useRouter();
-  const { toggleTheme, resolvedTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -76,17 +72,6 @@ export function CommandMenu({
         action: () => {
           onOpenChange(false);
           onOpenQuickAdd?.();
-        },
-      },
-      {
-        id: "action-theme",
-        title: resolvedTheme === "dark" ? "Açık Temaya Geç" : "Koyu Temaya Geç (Dark Mode)",
-        category: "Hızlı Aksiyonlar",
-        icon: resolvedTheme === "dark" ? Sun : Moon,
-        badge: "Tema",
-        action: () => {
-          toggleTheme();
-          onOpenChange(false);
         },
       },
       // Pages
@@ -233,7 +218,7 @@ export function CommandMenu({
     }
 
     return list;
-  }, [query, resolvedTheme, onOpenChange, onOpenQuickAdd, router, toggleTheme]);
+  }, [query, onOpenChange, onOpenQuickAdd, router]);
 
   const filteredItems = useMemo(() => {
     if (!query.trim()) return items;

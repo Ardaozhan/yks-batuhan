@@ -28,7 +28,6 @@ import { defaultProfile } from "@/lib/mock-data";
 import { getProfile } from "@/lib/study-store";
 import type { UserProfile } from "@/types/study";
 import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { CommandMenu } from "@/components/ui/command-menu";
 
 const primaryNav = [
@@ -152,9 +151,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Bottom Section: Account */}
         <div className="mt-auto space-y-1 pt-4 border-t border-[var(--outline)]">
-          <div className="mb-2 px-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#777a73]">
-            <span>Hesap</span>
-            <ThemeToggle />
+          <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[#777a73]">
+            Hesap
           </div>
           <NavLink href="/profile" label="Profil" Icon={UserRound} active={isActive("/profile")} />
           <NavLink href="/settings" label="Ayarlar" Icon={Settings} active={isActive("/settings")} />
@@ -180,8 +178,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Search size={18} />
           </button>
-
-          <ThemeToggle />
 
           <button
             onClick={() => setNotifOpen(!notifOpen)}
