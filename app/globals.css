@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+:root { --background:#fbf9f5; --surface:#fff; --surface-muted:#efeeea; --surface-ai:#e9eee6; --ink:#1b1c1a; --muted:#5d605a; --outline:#c5c8be; --primary:#526049; --primary-strong:#5a6a50; --primary-soft:#d7e8cb; --danger:#a33a32; }
+* { box-sizing:border-box; }
+html { background:var(--background); }
+body { min-height:100vh; margin:0; background:var(--background); color:var(--ink); font-family:var(--font-inter),Arial,sans-serif; }
+button,input,textarea { font:inherit; }
+button { cursor:pointer; }
+@layer utilities { .font-display { font-family:var(--font-geist),Arial,sans-serif; } .paper-card { background:var(--surface); border:1px solid var(--outline); border-radius:16px; } .app-focus:focus-visible { outline:2px solid var(--primary); outline-offset:3px; } .hide-scrollbar { scrollbar-width:none; } .hide-scrollbar::-webkit-scrollbar { display:none; } }

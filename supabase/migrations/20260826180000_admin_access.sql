@@ -1,0 +1,11 @@
+alter table public.profiles add column if not exists role text not null default 'student' check (role in ('student','admin'));
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path = public as $$ select exists (select 1 from public.profiles where user_id = auth.uid() and role = 'admin'); $$;
+create policy "admins read profiles" on public.profiles for select using (public.is_admin());
+create policy "admins read subjects" on public.subjects for select using (public.is_admin());
+create policy "admins read topics" on public.topics for select using (public.is_admin());
+create policy "admins read tasks" on public.daily_tasks for select using (public.is_admin());
+create policy "admins read sessions" on public.study_sessions for select using (public.is_admin());
+create policy "admins read exams" on public.exams for select using (public.is_admin());
+create policy "admins read results" on public.exam_results for select using (public.is_admin());
+create policy "admins read mistakes" on public.mistakes for select using (public.is_admin());
+-- Grant deliberately, after the user has signed up: update public.profiles set role = 'admin' where display_name = '...';

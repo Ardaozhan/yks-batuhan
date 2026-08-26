@@ -1,0 +1,8 @@
+import { z } from "zod";
+
+export const subjectSchema = z.object({ name:z.string().trim().min(2,"Ders adı en az 2 karakter olmalı."), examType:z.enum(["TYT","AYT","Other"]), accent:z.string().optional() });
+export const topicSchema = z.object({ name:z.string().trim().min(2,"Konu adı en az 2 karakter olmalı."), subject:z.string().trim().min(2,"Bir ders seçmelisin."), questionTarget:z.coerce.number().int().min(0).optional() });
+export const taskSchema = z.object({ title:z.string().trim().min(2,"Görev adı en az 2 karakter olmalı."), subject:z.string().trim().min(2,"Ders alanı zorunlu."), plannedQuestions:z.coerce.number().int().min(0).optional(), plannedMinutes:z.coerce.number().int().min(0).optional() });
+export const studySessionSchema = z.object({ subject:z.string().trim().min(2,"Ders alanı zorunlu."), totalQuestions:z.coerce.number().int().min(0), correct:z.coerce.number().int().min(0), wrong:z.coerce.number().int().min(0), blank:z.coerce.number().int().min(0), duration:z.coerce.number().int().positive("Süre 0'dan büyük olmalı.") }).superRefine((value,ctx) => { if (value.correct + value.wrong + value.blank > value.totalQuestions) ctx.addIssue({ code:"custom", path:["totalQuestions"], message:"Doğru, yanlış ve boş toplamı soru sayısını aşamaz." }); });
+export const examSchema = z.object({ name:z.string().trim().min(2,"Deneme adı en az 2 karakter olmalı."), type:z.enum(["TYT","AYT"]), date:z.string().min(1,"Tarih seçmelisin.") });
+export const mistakeSchema = z.object({ subject:z.string().trim().min(2,"Ders alanı zorunlu."), reason:z.enum(["concept","attention","calculation","time","other"]), note:z.string().trim().min(3,"Kısa bir not eklemelisin.") });
