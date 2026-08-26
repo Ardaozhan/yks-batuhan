@@ -28,6 +28,7 @@ export function SubjectsPage() {
 
   useEffect(() => {
     const handleUpdate = () => setSubjectsList(getSubjects());
+    handleUpdate();
     window.addEventListener("study_store_change", handleUpdate);
     return () => window.removeEventListener("study_store_change", handleUpdate);
   }, []);
@@ -165,27 +166,32 @@ function SubjectCard({ subject }: { subject: Subject }) {
 }
 
 export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
+  const decodedSubjectId = decodeURIComponent(subjectId);
   const [subject, setSubject] = useState<Subject | null>(() => {
     const list = getSubjects();
-    return list.find((s) => s.id === subjectId) || list[0] || null;
+    return list.find((s) => s.id === decodedSubjectId || s.id === subjectId) || list[0] || null;
   });
-  const [topics, setTopics] = useState<Topic[]>(() => getTopics(subjectId));
+  const [topics, setTopics] = useState<Topic[]>(() => getTopics(decodedSubjectId));
   const [filter, setFilter] = useState<"all" | "in_progress" | "completed">("all");
   const [quickOpen, setQuickOpen] = useState(false);
 
   useEffect(() => {
     const handleUpdate = () => {
       const list = getSubjects();
-      setSubject(list.find((s) => s.id === subjectId) || list[0] || null);
-      setTopics(getTopics(subjectId));
+      setSubject(list.find((s) => s.id === decodedSubjectId || s.id === subjectId) || null);
+      setTopics(getTopics(decodedSubjectId));
     };
+    handleUpdate();
     window.addEventListener("study_store_change", handleUpdate);
     return () => window.removeEventListener("study_store_change", handleUpdate);
-  }, [subjectId]);
+  }, [decodedSubjectId, subjectId]);
 
   const handleToggleTopic = (topicId: string) => {
-    const updated = toggleTopicStatus(topicId);
-    setTopics(updated);
+    const updatedSubjectTopics = toggleTopicStatus(topicId, decodedSubjectId);
+    setTopics(updatedSubjectTopics);
+    const list = getSubjects();
+    const updatedSub = list.find((s) => s.id === decodedSubjectId || s.id === subjectId) || null;
+    if (updatedSub) setSubject(updatedSub);
   };
 
   const filteredTopics = topics.filter((t) => {
@@ -373,28 +379,32 @@ export function TopicDetailPage({
   subjectId: string;
   topicId: string;
 }) {
+  const decodedSubjectId = decodeURIComponent(subjectId);
+  const decodedTopicId = decodeURIComponent(topicId);
   const [added, setAdded] = useState(false);
-  const [topics, setTopics] = useState<Topic[]>(() => getTopics());
+  const [topics, setTopics] = useState<Topic[]>(() => getTopics(decodedSubjectId));
   const [quickOpen, setQuickOpen] = useState(false);
 
   useEffect(() => {
-    const handleUpdate = () => setTopics(getTopics());
+    const handleUpdate = () => setTopics(getTopics(decodedSubjectId));
+    handleUpdate();
     window.addEventListener("study_store_change", handleUpdate);
     return () => window.removeEventListener("study_store_change", handleUpdate);
-  }, []);
+  }, [decodedSubjectId]);
 
-  const topic = topics.find((t) => t.id === topicId) || topics[0] || {
-    id: "problemler",
-    name: "Problemler",
-    progress: 67,
-    status: "in_progress",
-    questionCount: 180,
-    accuracy: 78,
-    notes: "Yaş ve hareket problemlerinde denklem kurarken tablo yöntemini kullan.",
-  };
+  const topic =
+    topics.find((t) => t.id === decodedTopicId || t.id === topicId) ||
+    topics[0] || {
+      id: decodedTopicId,
+      name: decodedTopicId.replace(/^[a-z]+-/, "").replace(/-/g, " "),
+      progress: 0,
+      status: "not_started" as const,
+      questionCount: 0,
+      accuracy: 0,
+    };
 
   const handleAddToToday = async () => {
-    const parentSub = getSubjects().find((s) => s.id === subjectId);
+    const parentSub = getSubjects().find((s) => s.id === decodedSubjectId || s.id === subjectId);
     await addDailyTask({
       subject: parentSub?.name || "Genel Ders",
       topic: topic.name,
@@ -443,8 +453,8 @@ export function TopicDetailPage({
         <button
           type="button"
           onClick={() => {
-            toggleTopicStatus(topic.id);
-            setTopics(getTopics());
+            const updated = toggleTopicStatus(topic.id, decodedSubjectId);
+            setTopics(updated);
           }}
           className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all shadow-xs active:scale-95 ${
             topic.status === "completed"

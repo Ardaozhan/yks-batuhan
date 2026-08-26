@@ -31,14 +31,19 @@ type TabKey = "tasks" | "curriculum" | "exams" | "mistakes" | "profiles";
 
 type DbProfile = {
   user_id: string;
+  email?: string | null;
   display_name: string | null;
   target_department: string | null;
   created_at: string;
+  last_sign_in_at?: string | null;
 };
 
 export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("tasks");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    () => dbProfiles[0]?.user_id || null
+  );
   const [profile, setProfile] = useState<UserProfile | null>(() => getProfile());
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>(() => getSubjects());
@@ -47,6 +52,12 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
   const [mistakes, setMistakes] = useState<MistakeRecord[]>(() => getMistakes());
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("turkce");
   const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (dbProfiles.length > 0 && !selectedStudentId) {
+      setSelectedStudentId(dbProfiles[0].user_id);
+    }
+  }, [dbProfiles, selectedStudentId]);
 
   useEffect(() => {
     getTodayTasks().then((data) => setTasks(data));
@@ -124,16 +135,57 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
         {/* Student Profile Card */}
         {profile && (
           <section className="paper-card p-6 bg-white shadow-xs">
+            {/* Student Switcher Bar if database accounts exist */}
+            {dbProfiles.length > 0 && (
+              <div className="mb-5 flex flex-wrap items-center gap-2 pb-4 border-b border-[var(--outline)]">
+                <span className="text-xs font-bold text-[var(--ink)] flex items-center gap-1.5 mr-2">
+                  <User size={15} className="text-[var(--primary)]" />
+                  Kayıtlı Öğrenciler ({dbProfiles.length}):
+                </span>
+                {dbProfiles.map((dp) => {
+                  const isSelected = selectedStudentId === dp.user_id;
+                  return (
+                    <button
+                      key={dp.user_id}
+                      type="button"
+                      onClick={() => setSelectedStudentId(dp.user_id)}
+                      className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                        isSelected
+                          ? "bg-[var(--primary)] text-white shadow-xs ring-2 ring-[var(--primary)]/30"
+                          : "border border-[var(--outline)] bg-[#fbf9f5] text-[var(--ink)] hover:bg-white hover:border-[var(--primary)]"
+                      }`}
+                    >
+                      <span>{dp.display_name || dp.email || "Öğrenci"}</span>
+                      {dp.email && (
+                        <span className={`text-[10px] ${isSelected ? "text-white/80" : "text-[var(--muted)]"}`}>
+                          ({dp.email})
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[var(--outline)]">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-[var(--primary)] bg-[var(--primary-soft)] font-display text-2xl font-bold text-[var(--primary)]">
-                  {profile.name.charAt(0)}
+                  {(
+                    dbProfiles.find((p) => p.user_id === selectedStudentId)?.display_name ||
+                    profile.name
+                  ).charAt(0)}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="font-display text-xl font-bold text-[var(--ink)]">
-                      {profile.name}
+                      {dbProfiles.find((p) => p.user_id === selectedStudentId)?.display_name ||
+                        profile.name}
                     </h2>
+                    {dbProfiles.find((p) => p.user_id === selectedStudentId)?.email && (
+                      <span className="rounded-md bg-[#fbf9f5] border border-[var(--outline)] px-2 py-0.5 text-xs text-[var(--muted)]">
+                        {dbProfiles.find((p) => p.user_id === selectedStudentId)?.email}
+                      </span>
+                    )}
                     <span className="rounded-full bg-[var(--surface-ai)] px-2.5 py-0.5 text-xs font-bold text-[var(--primary)] border border-[#d7e8cb]">
                       {profile.examType}
                     </span>
@@ -141,7 +193,11 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
                   <p className="mt-1 text-xs text-[var(--muted)] flex items-center gap-1.5">
                     <GraduationCap size={15} className="text-[var(--primary)]" />
                     <span>
-                      Hedef: <strong>{profile.targetDepartment}</strong>
+                      Hedef:{" "}
+                      <strong>
+                        {dbProfiles.find((p) => p.user_id === selectedStudentId)
+                          ?.target_department || profile.targetDepartment}
+                      </strong>
                       {profile.targetUniversity ? ` • ${profile.targetUniversity}` : ""}
                     </span>
                   </p>
@@ -574,24 +630,72 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
               </div>
             ) : (
               <div className="divide-y divide-[var(--outline)]">
-                {dbProfiles.map((p) => (
-                  <div
-                    key={p.user_id}
-                    className="py-3 flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div>
-                      <p className="font-semibold text-sm text-[var(--ink)]">
-                        {p.display_name || "İsimsiz Öğrenci"}
-                      </p>
-                      <p className="text-xs text-[var(--muted)] mt-0.5">
-                        {p.target_department || "Hedef Bölüm Belirtilmemiş"}
-                      </p>
+                {dbProfiles.map((p) => {
+                  const isSelected = selectedStudentId === p.user_id;
+                  return (
+                    <div
+                      key={p.user_id}
+                      className={`py-3.5 px-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors ${
+                        isSelected
+                          ? "bg-[var(--surface-ai)] border border-[#d7e8cb]"
+                          : "hover:bg-[#fbf9f5]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-sm font-bold text-[var(--primary)]">
+                          {(p.display_name || p.email || "Ö").charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-sm text-[var(--ink)]">
+                              {p.display_name || "Öğrenci"}
+                            </p>
+                            {p.email && (
+                              <span className="rounded bg-white border border-[var(--outline)] px-2 py-0.5 text-[11px] font-medium text-[var(--muted)]">
+                                {p.email}
+                              </span>
+                            )}
+                            {isSelected && (
+                              <span className="rounded-full bg-[var(--primary)] text-white px-2 py-0.2 text-[10px] font-bold">
+                                Seçili Öğrenci
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[var(--muted)] mt-0.5">
+                            {p.target_department || "Hedef Bölüm Belirtilmemiş"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                        <div className="text-left sm:text-right">
+                          <span className="text-[11px] text-[var(--muted)] block">
+                            Kayıt: {new Date(p.created_at).toLocaleDateString("tr-TR")}
+                          </span>
+                          {p.last_sign_in_at && (
+                            <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">
+                              Son Giriş: {new Date(p.last_sign_in_at).toLocaleDateString("tr-TR")}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedStudentId(p.user_id);
+                            setActiveTab("tasks");
+                          }}
+                          className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all shadow-2xs ${
+                            isSelected
+                              ? "bg-[var(--primary)] text-white"
+                              : "border border-[var(--outline)] bg-white text-[var(--ink)] hover:bg-[var(--surface-muted)]"
+                          }`}
+                        >
+                          {isSelected ? "İnceleniyor" : "Öğrenciyi Seç"}
+                        </button>
+                      </div>
                     </div>
-                    <span className="text-[11px] text-[var(--muted)]">
-                      Kayıt: {new Date(p.created_at).toLocaleDateString("tr-TR")}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

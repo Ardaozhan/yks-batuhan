@@ -13,6 +13,13 @@ const STORAGE_KEYS = {
   mistakes: "yks_mistakes_v5",
 };
 
+let memoryProfile: UserProfile | null = null;
+let memorySubjects: Subject[] | null = null;
+let memoryTopics: Topic[] | null = null;
+let memoryTasks: DailyTask[] | null = null;
+let memoryExams: Exam[] | null = null;
+let memoryMistakes: MistakeRecord[] | null = null;
+
 function getLocal<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
@@ -23,11 +30,13 @@ function getLocal<T>(key: string, fallback: T): T {
   }
 }
 
-function setLocal<T>(key: string, val: T): void {
+function setLocal<T>(key: string, val: T, shouldDispatch = true): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, JSON.stringify(val));
-    window.dispatchEvent(new Event("study_store_change"));
+    if (shouldDispatch) {
+      window.dispatchEvent(new Event("study_store_change"));
+    }
   } catch (err) {
     console.error("Local storage error:", err);
   }
@@ -35,12 +44,16 @@ function setLocal<T>(key: string, val: T): void {
 
 // PROFILE
 export function getProfile(): UserProfile {
-  return getLocal<UserProfile>(STORAGE_KEYS.profile, defaultProfile);
+  if (!memoryProfile) {
+    memoryProfile = getLocal<UserProfile>(STORAGE_KEYS.profile, defaultProfile);
+  }
+  return memoryProfile;
 }
 
 export function updateProfile(partial: Partial<UserProfile>): UserProfile {
   const current = getProfile();
   const updated = { ...current, ...partial };
+  memoryProfile = updated;
   setLocal(STORAGE_KEYS.profile, updated);
   return updated;
 }
@@ -68,28 +81,22 @@ export async function getTodayTasks(): Promise<DailyTask[]> {
               ? `${d.planned_questions} Soru Hedefi`
               : "Günlük Görev",
           duration: d.planned_minutes ? `${d.planned_minutes} dk` : "45 dk",
-          status: d.status as DailyTask["status"],
+          status: (d.status as DailyTask["status"]) || "pending",
           priority: (d.priority as DailyTask["priority"]) || "normal",
-          plannedQuestions: typeof d.planned_questions === "number" ? d.planned_questions : undefined,
-          subject:
-            Array.isArray(d.subjects) && typeof d.subjects[0]?.name === "string"
-              ? d.subjects[0].name
-              : d.subjects && typeof (d.subjects as { name?: unknown }).name === "string"
-              ? ((d.subjects as { name: string }).name)
-              : "Genel",
-          topic:
-            Array.isArray(d.topics) && typeof d.topics[0]?.name === "string"
-              ? d.topics[0].name
-              : d.topics && typeof (d.topics as { name?: unknown }).name === "string"
-              ? ((d.topics as { name: string }).name)
-              : "",
+          plannedQuestions: Number(d.planned_questions) || 30,
+          subject: (d.subjects as { name: string })?.name || "YKS",
+          topic: (d.topics as { name: string })?.name || "Çalışma",
         }));
       }
     }
   } catch {
-    // fallback to local
+    // Supabase optional fallback
   }
-  return getLocal<DailyTask[]>(STORAGE_KEYS.tasks, defaultTasks);
+
+  if (!memoryTasks) {
+    memoryTasks = getLocal<DailyTask[]>(STORAGE_KEYS.tasks, defaultTasks);
+  }
+  return memoryTasks;
 }
 
 export async function toggleTaskStatus(taskId: string): Promise<DailyTask[]> {
@@ -103,6 +110,7 @@ export async function toggleTaskStatus(taskId: string): Promise<DailyTask[]> {
   const updated = current.map((t) =>
     t.id === taskId ? { ...t, status: nextStatusMap[t.status] } : t
   );
+  memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
 
   try {
@@ -127,6 +135,7 @@ export async function addDailyTask(task: Omit<DailyTask, "id">): Promise<DailyTa
   };
   const current = await getTodayTasks();
   const updated = [newTask, ...current];
+  memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
 
   try {
@@ -156,6 +165,7 @@ export async function addMultipleTasks(tasks: Array<Omit<DailyTask, "id">>): Pro
   }));
   const current = await getTodayTasks();
   const updated = [...created, ...current];
+  memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
   return updated;
 }
@@ -163,13 +173,30 @@ export async function addMultipleTasks(tasks: Array<Omit<DailyTask, "id">>): Pro
 export async function deleteTask(taskId: string): Promise<DailyTask[]> {
   const current = await getTodayTasks();
   const updated = current.filter((t) => t.id !== taskId);
+  memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
   return updated;
 }
 
 // SUBJECTS
 export function getSubjects(): Subject[] {
-  return getLocal<Subject[]>(STORAGE_KEYS.subjects, defaultSubjects);
+  if (!memorySubjects) {
+    const rawSubs = getLocal<Subject[]>(STORAGE_KEYS.subjects, defaultSubjects);
+    const allTops = getTopics();
+    memorySubjects = rawSubs.map((s) => {
+      const sTopics = allTops.filter((t) => t.subjectId === s.id);
+      const topicCount = sTopics.length > 0 ? sTopics.length : s.topicCount;
+      const completedTopics = sTopics.filter((t) => t.status === "completed").length;
+      const progress = topicCount > 0 ? Math.round((completedTopics / topicCount) * 100) : 0;
+      return {
+        ...s,
+        topicCount,
+        completedTopics,
+        progress,
+      };
+    });
+  }
+  return memorySubjects;
 }
 
 export function addSubject(subject: Omit<Subject, "id" | "topicCount" | "completedTopics" | "progress">): Subject {
@@ -183,52 +210,73 @@ export function addSubject(subject: Omit<Subject, "id" | "topicCount" | "complet
     weeklyQuestions: 0,
   };
   const updated = [...current, newSub];
+  memorySubjects = updated;
   setLocal(STORAGE_KEYS.subjects, updated);
   return newSub;
 }
 
+// TOPICS
 export function getTopics(subjectId?: string): Topic[] {
-  const topics = getLocal<Topic[]>(STORAGE_KEYS.topics, defaultTopics);
-  if (subjectId) {
-    return topics.filter((t) => !t.subjectId || t.subjectId === subjectId);
+  if (!memoryTopics) {
+    memoryTopics = getLocal<Topic[]>(STORAGE_KEYS.topics, defaultTopics);
   }
-  return topics;
+  if (subjectId) {
+    return memoryTopics.filter((t) => t.subjectId === subjectId);
+  }
+  return memoryTopics;
 }
 
-export function toggleTopicStatus(topicId: string): Topic[] {
-  const topics = getLocal<Topic[]>(STORAGE_KEYS.topics, defaultTopics);
-  const target = topics.find((t) => t.id === topicId);
-  if (!target) return topics;
+export function toggleTopicStatus(topicId: string, filterSubjectId?: string): Topic[] {
+  if (!memoryTopics) {
+    memoryTopics = getLocal<Topic[]>(STORAGE_KEYS.topics, defaultTopics);
+  }
+  const target = memoryTopics.find((t) => t.id === topicId);
+  if (!target) {
+    return filterSubjectId ? memoryTopics.filter((t) => t.subjectId === filterSubjectId) : memoryTopics;
+  }
 
   const nextStatus: Topic["status"] =
     target.status === "completed" ? "not_started" : "completed";
   const nextProgress = nextStatus === "completed" ? 100 : 0;
 
-  const updated = topics.map((top) => {
+  const updatedTopics = memoryTopics.map((top) => {
     if (top.id === topicId) {
       return { ...top, status: nextStatus, progress: nextProgress };
     }
     return top;
   });
-  setLocal(STORAGE_KEYS.topics, updated);
+
+  memoryTopics = updatedTopics;
 
   // Automatically update parent subject's completed topics count and progress percentage
-  if (target.subjectId) {
-    const allSubjectTopics = updated.filter((t) => t.subjectId === target.subjectId);
+  const parentSubjectId = filterSubjectId || target.subjectId;
+  if (parentSubjectId) {
+    const allSubjectTopics = updatedTopics.filter((t) => t.subjectId === parentSubjectId);
     const completedCount = allSubjectTopics.filter((t) => t.status === "completed").length;
     const totalCount = allSubjectTopics.length;
     const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     const subjects = getSubjects();
-    const subIdx = subjects.findIndex((s) => s.id === target.subjectId);
+    const subIdx = subjects.findIndex((s) => s.id === parentSubjectId);
     if (subIdx !== -1) {
       subjects[subIdx].completedTopics = completedCount;
       subjects[subIdx].progress = progressPercent;
-      setLocal(STORAGE_KEYS.subjects, [...subjects]);
+      memorySubjects = [...subjects];
+      try {
+        localStorage.setItem(STORAGE_KEYS.subjects, JSON.stringify(memorySubjects));
+      } catch {
+        // Safe write
+      }
     }
   }
 
-  return updated;
+  // Save topics and emit single event
+  setLocal(STORAGE_KEYS.topics, updatedTopics, true);
+
+  if (filterSubjectId) {
+    return updatedTopics.filter((t) => t.subjectId === filterSubjectId);
+  }
+  return updatedTopics;
 }
 
 export function addTopic(topic: { name: string; subjectId: string; total?: number }): Topic {
@@ -244,6 +292,7 @@ export function addTopic(topic: { name: string; subjectId: string; total?: numbe
     accuracy: 0,
   };
   const updated = [...current, newTopic];
+  memoryTopics = updated;
   setLocal(STORAGE_KEYS.topics, updated);
 
   // Update topic count in subject
@@ -251,7 +300,8 @@ export function addTopic(topic: { name: string; subjectId: string; total?: numbe
   const subIdx = subjects.findIndex((s) => s.id === topic.subjectId);
   if (subIdx !== -1) {
     subjects[subIdx].topicCount += 1;
-    setLocal(STORAGE_KEYS.subjects, [...subjects]);
+    memorySubjects = [...subjects];
+    setLocal(STORAGE_KEYS.subjects, memorySubjects);
   }
 
   return newTopic;
@@ -259,7 +309,10 @@ export function addTopic(topic: { name: string; subjectId: string; total?: numbe
 
 // EXAMS
 export function getExams(): Exam[] {
-  return getLocal<Exam[]>(STORAGE_KEYS.exams, defaultExams);
+  if (!memoryExams) {
+    memoryExams = getLocal<Exam[]>(STORAGE_KEYS.exams, defaultExams);
+  }
+  return memoryExams;
 }
 
 export function addExam(exam: Omit<Exam, "id">): Exam {
@@ -269,13 +322,17 @@ export function addExam(exam: Omit<Exam, "id">): Exam {
     id: "exam-" + Date.now(),
   };
   const updated = [newExam, ...current];
+  memoryExams = updated;
   setLocal(STORAGE_KEYS.exams, updated);
   return newExam;
 }
 
 // MISTAKES
 export function getMistakes(): MistakeRecord[] {
-  return getLocal<MistakeRecord[]>(STORAGE_KEYS.mistakes, defaultMistakes);
+  if (!memoryMistakes) {
+    memoryMistakes = getLocal<MistakeRecord[]>(STORAGE_KEYS.mistakes, defaultMistakes);
+  }
+  return memoryMistakes;
 }
 
 export function addMistake(mistake: Omit<MistakeRecord, "id">): MistakeRecord {
@@ -285,6 +342,7 @@ export function addMistake(mistake: Omit<MistakeRecord, "id">): MistakeRecord {
     id: "mistake-" + Date.now(),
   };
   const updated = [newMistake, ...current];
+  memoryMistakes = updated;
   setLocal(STORAGE_KEYS.mistakes, updated);
   return newMistake;
 }
