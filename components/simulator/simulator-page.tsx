@@ -252,6 +252,26 @@ export function SimulatorPage() {
         })}
       </div>
 
+      {/* Mobile Live Quick Rank Banner (Sticky on small screens) */}
+      <div className="lg:hidden sticky top-[60px] z-10 -mx-4 px-4 py-2 bg-[var(--background)]/90 backdrop-blur-md border-b border-[var(--outline)] mb-6">
+        <div className="rounded-2xl bg-gradient-to-r from-[var(--primary)] to-[#3a4933] p-4 text-white shadow-md flex items-center justify-between">
+          <div>
+            <span className="text-[10px] uppercase font-extrabold tracking-wider text-white/80 block">
+              Tahmini {field} Sıralaması
+            </span>
+            <span className="font-display text-2xl font-black tracking-tight">
+              #{currentRank.toLocaleString("tr-TR")}
+            </span>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-white/80 block">Yerleştirme</span>
+            <span className="font-display text-base font-bold">
+              {currentPlacementScore} P
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Grid: Left Inputs, Right Simulation Display */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
         {/* Left Column: Net Inputs */}
