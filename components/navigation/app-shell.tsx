@@ -8,6 +8,7 @@ import {
   BarChart3,
   Bell,
   BookOpen,
+  Calculator,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
@@ -31,6 +32,7 @@ const primaryNav = [
   { href: "/today", label: "Bugün", icon: CalendarDays },
   { href: "/subjects", label: "Dersler", icon: BookOpen },
   { href: "/exams", label: "Denemeler", icon: Award },
+  { href: "/simulator", label: "Simülatör", icon: Calculator },
   { href: "/planner", label: "Planlayıcı", icon: ListTodo },
   { href: "/analytics", label: "Analiz", icon: BarChart3 },
   { href: "/coach", label: "AI Koçum", icon: Sparkles },
@@ -210,6 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <nav className="mt-4 space-y-1">
                 {[
                   { href: "/today", label: "Bugün (Çalışma Alanı)", icon: CalendarDays },
+                  { href: "/simulator", label: "Sıralama Simülatörü", icon: Calculator, badge: "2025" },
                   { href: "/planner", label: "AI Planlayıcı", icon: ListTodo, badge: "AI" },
                   { href: "/analytics", label: "Analiz & Raporlar", icon: BarChart3, badge: "AI" },
                   { href: "/subjects", label: "Dersler & Müfredat", icon: BookOpen },

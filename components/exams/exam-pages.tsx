@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Award,
+  Calculator,
   Calendar,
   ChevronRight,
   Plus,
@@ -79,6 +80,14 @@ export function ExamsPage() {
               AYT
             </button>
           </div>
+
+          <Link
+            href="/simulator"
+            className="app-focus inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--primary)] bg-[var(--surface-ai)] px-3.5 text-xs font-bold text-[var(--primary)] hover:bg-[#d7e8cb] transition-all shadow-2xs active:scale-95"
+          >
+            <Calculator size={15} />
+            <span>Sıralama Simülatörü ↗</span>
+          </Link>
 
           <button
             onClick={() => setAddModalOpen(true)}

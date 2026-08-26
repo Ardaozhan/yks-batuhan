@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Calculator,
   Check,
   CheckCircle2,
   Clock3,
@@ -359,6 +360,16 @@ export function TodayDashboard() {
               <span className="flex items-center gap-2">
                 <Sparkles size={16} className="text-[var(--primary)]" />
                 AI ile Günlük Plan Yap
+              </span>
+              <span className="text-[var(--muted)]">→</span>
+            </Link>
+            <Link
+              href="/simulator"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--surface-muted)] text-xs font-medium text-[var(--ink)] transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Calculator size={16} className="text-[var(--primary)]" />
+                Sıralama & Net Simülatörü
               </span>
               <span className="text-[var(--muted)]">→</span>
             </Link>
