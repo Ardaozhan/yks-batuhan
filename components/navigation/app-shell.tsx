@@ -16,6 +16,7 @@ import {
   ListTodo,
   Menu,
   Plus,
+  Search,
   Settings,
   Shield,
   Sparkles,
@@ -27,6 +28,8 @@ import { defaultProfile } from "@/lib/mock-data";
 import { getProfile } from "@/lib/study-store";
 import type { UserProfile } from "@/types/study";
 import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { CommandMenu } from "@/components/ui/command-menu";
 
 const primaryNav = [
   { href: "/today", label: "Bugün", icon: CalendarDays },
@@ -42,6 +45,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [quickOpen, setQuickOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
 
@@ -108,6 +112,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </Link>
 
+        {/* Quick Search / Command Palette Trigger */}
+        <button
+          type="button"
+          onClick={() => setCommandOpen(true)}
+          className="mb-4 flex w-full items-center justify-between rounded-xl border border-[var(--outline)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--muted)] hover:border-[var(--primary)] hover:text-[var(--ink)] transition-all shadow-2xs group"
+        >
+          <span className="flex items-center gap-2">
+            <Search size={15} className="group-hover:text-[var(--primary)]" />
+            <span>Hızlı Arama...</span>
+          </span>
+          <kbd className="rounded bg-[var(--surface-muted)] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[var(--muted)] border border-[var(--outline)]">
+            ⌘K
+          </kbd>
+        </button>
+
         {/* Main Navigation */}
         <div className="mb-2 px-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#777a73]">
           <span>Menü</span>
@@ -132,9 +151,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom Section: Account */}
-        <div className="mt-auto space-y-1 pt-6 border-t border-[var(--outline)]">
-          <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[#777a73]">
-            Hesap
+        <div className="mt-auto space-y-1 pt-4 border-t border-[var(--outline)]">
+          <div className="mb-2 px-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#777a73]">
+            <span>Hesap</span>
+            <ThemeToggle />
           </div>
           <NavLink href="/profile" label="Profil" Icon={UserRound} active={isActive("/profile")} />
           <NavLink href="/settings" label="Ayarlar" Icon={Settings} active={isActive("/settings")} />
@@ -151,22 +171,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {appConfig.name}
           </span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setCommandOpen(true)}
+            aria-label="Komut Menüsü (Ara)"
+            className="app-focus flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
+          >
+            <Search size={18} />
+          </button>
+
+          <ThemeToggle />
+
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             aria-label="Bildirimler"
-            className="app-focus relative flex h-10 w-10 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="app-focus relative flex h-9 w-9 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-colors"
           >
-            <Bell size={19} />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+            <Bell size={18} />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--surface)]"></span>
           </button>
 
           <button
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Tüm Menüyü Aç"
-            className="app-focus flex h-10 w-10 items-center justify-center rounded-full border border-[var(--outline)] bg-white text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
+            className="app-focus flex h-9 w-9 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
           >
-            <Menu size={20} />
+            <Menu size={18} />
           </button>
         </div>
       </header>
@@ -354,6 +385,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Quick Add Dialog */}
       {quickOpen && <QuickAddDialog onClose={() => setQuickOpen(false)} />}
+
+      {/* Global Command Palette (Ctrl+K) */}
+      <CommandMenu
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        onOpenQuickAdd={() => setQuickOpen(true)}
+      />
     </div>
   );
 }

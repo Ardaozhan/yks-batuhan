@@ -11,9 +11,21 @@ import {
   Target,
 } from "lucide-react";
 import { defaultProfile } from "@/lib/mock-data";
-import { getProfile, updateProfile } from "@/lib/study-store";
+import {
+  getExams,
+  getMistakes,
+  getProfile,
+  getSubjects,
+  getTodayTasks,
+  getTopics,
+  updateProfile,
+} from "@/lib/study-store";
+import { useTheme } from "@/components/theme/theme-provider";
+import { toast } from "@/components/ui/toaster";
+import { Moon, Sun, Monitor, Upload } from "lucide-react";
 
 export function SettingsPage() {
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState({
     name: defaultProfile.name,
     targetDepartment: defaultProfile.targetDepartment,
@@ -57,27 +69,62 @@ export function SettingsPage() {
       targetUniversity: profile.targetUniversity,
     });
     setSaved(true);
+    toast.success("Ayarlarınız ve hedefleriniz başarıyla kaydedildi.");
     setTimeout(() => setSaved(false), 2000);
   };
 
   const handleResetData = () => {
-    if (window.confirm("Tüm yerel veriler varsayılan ayarlara döndürülecek. Emin misiniz?")) {
+    if (window.confirm("Tüm yerel veriler sıfırlanacak. Emin misiniz?")) {
       localStorage.clear();
-      window.location.reload();
+      toast.info("Veriler sıfırlandı, sayfa yenileniyor.");
+      setTimeout(() => window.location.reload(), 500);
     }
   };
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
+    const tasks = await getTodayTasks();
     const data = {
       profile: getProfile(),
+      subjects: getSubjects(),
+      topics: getTopics(),
+      exams: getExams(),
+      mistakes: getMistakes(),
+      tasks,
       timestamp: new Date().toISOString(),
+      version: "2.0",
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `yks_master_yedek_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `yks_odak_tam_yedek_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
+    toast.success("Tüm çalışma verileriniz ve denemeleriniz JSON dosyası olarak indirildi.");
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (json.profile) localStorage.setItem("yks_profile", JSON.stringify(json.profile));
+        if (json.subjects) localStorage.setItem("yks_subjects", JSON.stringify(json.subjects));
+        if (json.topics) localStorage.setItem("yks_topics", JSON.stringify(json.topics));
+        if (json.exams) localStorage.setItem("yks_exams", JSON.stringify(json.exams));
+        if (json.mistakes) localStorage.setItem("yks_mistakes", JSON.stringify(json.mistakes));
+        if (json.tasks) localStorage.setItem("yks_daily_tasks", JSON.stringify(json.tasks));
+
+        window.dispatchEvent(new Event("study_store_change"));
+        toast.success("Veri yedeği başarıyla geri yüklendi! Sayfa güncelleniyor.");
+        setTimeout(() => window.location.reload(), 800);
+      } catch {
+        toast.error("Geçersiz JSON yedek dosyası seçildi.");
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -169,11 +216,44 @@ export function SettingsPage() {
           </div>
         </section>
 
+        {/* Section 2.5: Theme Settings */}
+        <section className="paper-card p-6 bg-white shadow-xs">
+          <h2 className="font-display text-lg font-bold text-[var(--ink)] flex items-center gap-2 mb-4">
+            <Sun size={18} className="text-[var(--primary)]" />
+            <span>Görünüm ve Tema</span>
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { key: "light", label: "Açık Tema", icon: Sun },
+              { key: "dark", label: "Koyu Tema", icon: Moon },
+              { key: "system", label: "Sistem", icon: Monitor },
+            ].map((t) => {
+              const Icon = t.icon;
+              const isSelected = theme === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTheme(t.key as "light" | "dark" | "system")}
+                  className={`flex flex-col items-center justify-center gap-2 rounded-xl p-4 border text-xs font-bold transition-all ${
+                    isSelected
+                      ? "border-[var(--primary)] bg-[var(--surface-ai)] text-[var(--primary)] shadow-xs ring-2 ring-[var(--primary)]/30"
+                      : "border-[var(--outline)] bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)]"
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Section 3: Data & Sync */}
         <section className="paper-card p-6 bg-white shadow-xs">
           <h2 className="font-display text-lg font-bold text-[var(--ink)] flex items-center gap-2 mb-4">
             <Database size={18} className="text-[var(--primary)]" />
-            <span>Veri ve Senkronizasyon</span>
+            <span>Veri Yedekleme ve Senkronizasyon</span>
           </h2>
 
           <div className="p-4 rounded-xl bg-[var(--surface-ai)] border border-[#d7e8cb] mb-4 flex items-center justify-between">
@@ -191,18 +271,29 @@ export function SettingsPage() {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 items-center">
             <button
               onClick={handleExportData}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--outline)] bg-white px-4 py-2 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-[var(--surface)] px-4 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all active:scale-95 shadow-2xs"
             >
               <Download size={14} />
-              <span>Verileri Dışa Aktar (.json)</span>
+              <span>Verileri Yedekle (.json)</span>
             </button>
+
+            <label className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-[var(--surface)] px-4 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-muted)] cursor-pointer transition-all active:scale-95 shadow-2xs">
+              <Upload size={14} />
+              <span>Yedekten Geri Yükle</span>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportFile}
+                className="hidden"
+              />
+            </label>
 
             <button
               onClick={handleResetData}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 px-4 py-2.5 text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-100 transition-all ml-auto active:scale-95"
             >
               <RotateCcw size={14} />
               <span>Tüm Verileri Sıfırla</span>
