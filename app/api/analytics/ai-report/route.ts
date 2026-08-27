@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { CURRICULUM_AI_TRAINING_PROMPT } from "@/lib/curriculum-knowledge";
 import { checkRateLimit } from "@/lib/security";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,19 @@ export async function POST(req: Request) {
       return rateLimit.response;
     }
 
-    const { context } = await req.json();
+    // Defense-in-depth: verify session inside the route, not only in middleware
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+    }
+
+    // Payload size guard: reject oversized context bodies before parsing
+    const rawBody = await req.text();
+    if (rawBody.length > 64 * 1024) {
+      return NextResponse.json({ error: "İstek gövdesi çok büyük (maks. 64 KB)." }, { status: 413 });
+    }
+    const { context } = JSON.parse(rawBody);
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {

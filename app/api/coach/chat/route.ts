@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { CURRICULUM_AI_TRAINING_PROMPT } from "@/lib/curriculum-knowledge";
 import { checkRateLimit } from "@/lib/security";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
@@ -9,10 +10,22 @@ export async function POST(req: Request) {
       return rateLimit.response;
     }
 
+    // Defense-in-depth: verify session inside the route, not only in middleware
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+    }
+
     const { message, history, context, mode = "strategy" } = await req.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Mesaj gerekli." }, { status: 400 });
+    }
+
+    // Input length guard: prevent oversized prompt injection / token exhaustion
+    if (message.length > 2000) {
+      return NextResponse.json({ error: "Mesaj çok uzun (maks. 2000 karakter)." }, { status: 400 });
     }
 
     const apiKey = process.env.DEEPSEEK_API_KEY;

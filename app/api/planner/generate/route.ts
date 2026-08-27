@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { CURRICULUM_AI_TRAINING_PROMPT } from "@/lib/curriculum-knowledge";
 import { checkRateLimit } from "@/lib/security";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,19 @@ export async function POST(req: Request) {
       return rateLimit.response;
     }
 
+    // Defense-in-depth: verify session inside the route, not only in middleware
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+    }
+
     const { hours = 4, energy = "normal", focus = "", style = "balanced", context } = await req.json();
+
+    // Input length guard: prevent oversized prompt injection / token exhaustion
+    if (typeof focus === "string" && focus.length > 500) {
+      return NextResponse.json({ error: "Odak notu çok uzun (maks. 500 karakter)." }, { status: 400 });
+    }
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
