@@ -15,6 +15,7 @@ import {
   CirclePlus,
   ListTodo,
   Menu,
+  MessageSquare,
   Plus,
   Search,
   Settings,
@@ -29,6 +30,7 @@ import { getProfile } from "@/lib/study-store";
 import type { UserProfile } from "@/types/study";
 import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
 import { CommandMenu } from "@/components/ui/command-menu";
+import { FeedbackDialog } from "@/components/ui/feedback-dialog";
 
 const primaryNav = [
   { href: "/today", label: "Bugün", icon: CalendarDays },
@@ -45,6 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [quickOpen, setQuickOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
 
@@ -156,6 +159,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <NavLink href="/profile" label="Profil" Icon={UserRound} active={isActive("/profile")} />
           <NavLink href="/settings" label="Ayarlar" Icon={Settings} active={isActive("/settings")} />
+          <button
+            onClick={() => setFeedbackOpen(true)}
+            className="app-focus flex min-h-11 w-full items-center gap-3.5 rounded-r-full px-4 text-left text-sm font-medium text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)] transition-colors"
+          >
+            <MessageSquare size={18} />
+            <span>Geri Bildirim</span>
+          </button>
         </div>
       </aside>
 
@@ -294,6 +304,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Settings size={18} />
                 <span>Ayarlar</span>
               </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setFeedbackOpen(true);
+                }}
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3.5 text-xs font-semibold text-[var(--muted)] hover:bg-[#fbf9f5] hover:text-[var(--ink)]"
+              >
+                <MessageSquare size={18} />
+                <span>Geri Bildirim & Destek</span>
+              </button>
               <Link
                 href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
@@ -390,6 +410,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         onOpenChange={setCommandOpen}
         onOpenQuickAdd={() => setQuickOpen(true)}
       />
+
+      {/* User Feedback & Support Dialog */}
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </div>
   );
 }

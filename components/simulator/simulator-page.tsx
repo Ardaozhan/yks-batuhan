@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Info,
   RotateCcw,
+  Share2,
   Sliders,
   Sparkles,
   Target,
@@ -20,10 +21,12 @@ import { getExams, getProfile } from "@/lib/study-store";
 import { defaultProfile } from "@/lib/mock-data";
 import { calculateNet } from "@/lib/analytics";
 import type { UserProfile } from "@/types/study";
+import { useToast } from "@/components/ui/toaster";
 
 type FieldType = "SAY" | "EA" | "SOZ" | "DIL" | "TYT";
 
 export function SimulatorPage() {
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [field, setField] = useState<FieldType>("SAY");
 
@@ -570,6 +573,30 @@ export function SimulatorPage() {
                   {currentRawScore}
                 </span>
               </div>
+            </div>
+
+            {/* Social Share Buttons */}
+            <div className="mt-4 pt-3 border-t border-[var(--outline)] flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const text = `🎯 2025 YKS Simülatöründe ${field} sıralama tahminim: #${currentRank.toLocaleString("tr-TR")}! Netlerini sen de hesapla: https://yks-batuhan.vercel.app/simulator`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50/80 px-3 py-2 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors shadow-2xs"
+              >
+                <span>WhatsApp&apos;ta Paylaş</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const text = `🎯 2025 YKS Simülatöründe ${field} tahmini sıralamam: #${currentRank.toLocaleString("tr-TR")}! @yksodak ile hesapla: https://yks-batuhan.vercel.app/simulator`;
+                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white px-3 py-2 text-[11px] font-bold text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors shadow-2xs"
+              >
+                <span>X (Twitter)</span>
+              </button>
             </div>
           </div>
 

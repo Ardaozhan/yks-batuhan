@@ -14,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/login",
     "/register",
     "/forgot-password",
+    "/privacy",
+    "/terms",
   ];
 
   return routes.map((route) => ({

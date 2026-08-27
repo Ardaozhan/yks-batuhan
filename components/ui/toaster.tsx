@@ -29,6 +29,20 @@ export const toast = {
   },
 };
 
+export function useToast() {
+  return {
+    toast: (opts: { title?: string; description?: string; variant?: "success" | "error" | "info" }) => {
+      if (opts.variant === "error") {
+        toast.error(opts.description || "", opts.title || "Hata");
+      } else if (opts.variant === "info") {
+        toast.info(opts.description || "", opts.title || "Bilgi");
+      } else {
+        toast.success(opts.description || "", opts.title || "Başarılı");
+      }
+    },
+  };
+}
+
 function emit(toastMsg: ToastMessage) {
   listeners.forEach((l) => l(toastMsg));
 }
