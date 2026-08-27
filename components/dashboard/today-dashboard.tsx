@@ -89,17 +89,23 @@ export function TodayDashboard() {
     return tasks;
   }, [tasks, filter]);
 
-  // Toggle status
-  const handleToggle = async (taskId: string) => {
-    const updated = await toggleTaskStatus(taskId);
-    setTasks(updated);
+  // Toggle status with 0ms instant optimistic UI
+  const handleToggle = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, status: t.status === "completed" ? "pending" : "completed" }
+          : t
+      )
+    );
+    toggleTaskStatus(taskId).catch((err) => console.error("Toggle error:", err));
   };
 
-  // Delete task
-  const handleDelete = async (taskId: string, e: React.MouseEvent) => {
+  // Delete task with 0ms instant optimistic UI
+  const handleDelete = (taskId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = await deleteTask(taskId);
-    setTasks(updated);
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    deleteTask(taskId).catch((err) => console.error("Delete error:", err));
   };
 
   // Add AI recommended task dynamically
@@ -139,7 +145,9 @@ export function TodayDashboard() {
   return (
     <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-10 md:py-10 space-y-6">
       {/* Header Banner */}
-      <header className="border-b border-[var(--outline)] pb-6">
+      <header className="surface-panel relative overflow-hidden rounded-3xl p-5 pb-6 sm:p-7 md:p-8">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[var(--primary-soft)]/50 blur-3xl" />
+        <div className="relative">
         {/* Top row: greeting + badges */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -187,6 +195,7 @@ export function TodayDashboard() {
             {completedCount} / {tasks.length} görev tamamlandı
           </p>
         </div>
+        </div>
       </header>
 
       {/* Main Grid: Left Tasks & Right Stats */}
@@ -194,7 +203,7 @@ export function TodayDashboard() {
         {/* Left Column: Tasks */}
         <div className="space-y-4">
           {/* Action Bar — cleanly aligned flex row */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white shadow-2xs">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white/90">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)]">
                 <CheckCircle2 size={18} />

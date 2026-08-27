@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   defaultProfile,
@@ -125,38 +125,49 @@ export async function getTodayTasks(): Promise<DailyTask[]> {
     // Supabase optional fallback
   }
 
+function getTasksSnapshot(): DailyTask[] {
   if (!memoryTasks) {
     memoryTasks = getLocal<DailyTask[]>(STORAGE_KEYS.tasks, defaultTasks);
   }
   return memoryTasks;
 }
 
-export async function toggleTaskStatus(taskId: string): Promise<DailyTask[]> {
-  const current = await getTodayTasks();
+export async function toggleTaskStatus(
+  taskId: string,
+  desiredStatus?: DailyTask["status"]
+): Promise<DailyTask[]> {
+  const current = getTasksSnapshot();
   const nextStatusMap: Record<DailyTask["status"], DailyTask["status"]> = {
-    pending: "active",
+    pending: "completed",
     active: "completed",
     completed: "pending",
   };
 
-  const updated = current.map((t) =>
-    t.id === taskId ? { ...t, status: nextStatusMap[t.status] } : t
-  );
+  const updated = current.map((t) => {
+    if (t.id !== taskId) return t;
+    const newStatus = desiredStatus || nextStatusMap[t.status] || "completed";
+    return { ...t, status: newStatus };
+  });
+
   memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
 
-  try {
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData?.user) {
-      const task = updated.find((t) => t.id === taskId);
-      if (task) {
-        await supabase.from("daily_tasks").update({ status: task.status }).eq("id", taskId);
+  // Background async sync to Supabase without blocking UI
+  (async () => {
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        const task = updated.find((t) => t.id === taskId);
+        if (task) {
+          await supabase.from("daily_tasks").update({ status: task.status }).eq("id", taskId);
+        }
       }
+    } catch {
+      // Ignore remote sync errors in offline mode
     }
-  } catch {
-    // Ignore remote sync errors in offline mode
-  }
+  })();
+
   return updated;
 }
 
@@ -165,28 +176,31 @@ export async function addDailyTask(task: Omit<DailyTask, "id">): Promise<DailyTa
     ...task,
     id: "task-" + Date.now(),
   };
-  const current = await getTodayTasks();
+  const current = getTasksSnapshot();
   const updated = [newTask, ...current];
   memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
 
-  try {
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData?.user) {
-      await supabase.from("daily_tasks").insert({
-        user_id: userData.user.id,
-        title: task.subject + ": " + task.topic,
-        description: task.description,
-        status: task.status,
-        priority: task.priority || "normal",
-        planned_minutes: parseInt(task.duration) || 45,
-        planned_questions: task.plannedQuestions || 30,
-      });
+  (async () => {
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        await supabase.from("daily_tasks").insert({
+          user_id: userData.user.id,
+          title: task.subject + ": " + task.topic,
+          description: task.description,
+          status: task.status,
+          priority: task.priority || "normal",
+          planned_minutes: parseInt(task.duration) || 45,
+          planned_questions: task.plannedQuestions || 30,
+        });
+      }
+    } catch {
+      // Local storage acts as backup
     }
-  } catch {
-    // Local storage acts as backup
-  }
+  })();
+
   return newTask;
 }
 
@@ -195,18 +209,54 @@ export async function addMultipleTasks(tasks: Array<Omit<DailyTask, "id">>): Pro
     ...t,
     id: "task-" + (Date.now() + idx),
   }));
-  const current = await getTodayTasks();
+  const current = getTasksSnapshot();
   const updated = [...created, ...current];
   memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
+
+  (async () => {
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        for (const t of created) {
+          await supabase.from("daily_tasks").insert({
+            user_id: userData.user.id,
+            title: t.subject + ": " + t.topic,
+            description: t.description,
+            status: t.status,
+            priority: t.priority || "normal",
+            planned_minutes: parseInt(t.duration) || 45,
+            planned_questions: t.plannedQuestions || 30,
+          });
+        }
+      }
+    } catch {
+      // Background sync backup
+    }
+  })();
+
   return updated;
 }
 
 export async function deleteTask(taskId: string): Promise<DailyTask[]> {
-  const current = await getTodayTasks();
+  const current = getTasksSnapshot();
   const updated = current.filter((t) => t.id !== taskId);
   memoryTasks = updated;
   setLocal(STORAGE_KEYS.tasks, updated);
+
+  (async () => {
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        await supabase.from("daily_tasks").delete().eq("id", taskId);
+      }
+    } catch {
+      // Ignore remote sync errors
+    }
+  })();
+
   return updated;
 }
 

@@ -126,6 +126,7 @@ export function CoachPage() {
 
   // Personalize welcome message after client mount without hydration mismatch
   useEffect(() => {
+    const timer = window.setTimeout(() => {
     const profile = getProfile();
     if (profile.name && profile.name !== "Öğrenci") {
       const targetInfo = profile.targetDepartment
@@ -144,6 +145,9 @@ export function CoachPage() {
         return prev;
       });
     }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Auto-scroll to bottom of chat
@@ -314,8 +318,9 @@ export function CoachPage() {
   return (
     <div className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 md:px-8 flex flex-col h-[calc(100dvh-64px)] sm:h-[calc(100vh-80px)]">
       {/* 1. Header Bar */}
-      <header className="mb-3 flex items-center justify-between gap-3 border-b border-[var(--outline)] pb-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <header className="surface-panel relative mb-3 flex items-center justify-between gap-3 overflow-hidden rounded-2xl p-3 sm:p-4 shrink-0">
+        <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[var(--primary-soft)]/60 blur-2xl" />
+        <div className="relative flex items-center gap-2.5 min-w-0">
           <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-ai)] text-[var(--primary)] shadow-xs border border-[#d7e8cb]">
             <Bot size={22} className="sm:size-6" />
           </div>
@@ -339,7 +344,7 @@ export function CoachPage() {
           type="button"
           onClick={handleClearChat}
           title="Yeni Sohbet Başlat"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:border-[var(--primary)] transition-all shrink-0 active:scale-95 touch-manipulation shadow-2xs"
+          className="relative inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white/90 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:border-[var(--primary)] transition-all shrink-0 active:scale-95 touch-manipulation shadow-2xs"
         >
           <RotateCcw size={13} />
           <span className="hidden sm:inline">Yeni Sohbet</span>
@@ -381,7 +386,7 @@ export function CoachPage() {
       </div>
 
       {/* 3. Main Chat Container */}
-      <div className="paper-card flex-1 flex flex-col justify-between p-3 sm:p-4 md:p-5 bg-white overflow-hidden shadow-xs min-h-0">
+      <div className="paper-card flex-1 flex flex-col justify-between p-3 sm:p-4 md:p-5 bg-white/90 overflow-hidden min-h-0">
         {/* Messages Scroll Area */}
         <div className="flex-1 overflow-y-auto space-y-3.5 sm:space-y-5 pr-1 sm:pr-2">
           {messages.map((m) => (

@@ -12,6 +12,8 @@
   --primary-strong: #424e3b;
   --primary-soft: #d7e8cb;
   --danger: #a33a32;
+  --shadow-card: 0 1px 2px rgba(27, 28, 26, 0.04), 0 8px 24px rgba(82, 96, 73, 0.06);
+  --shadow-card-hover: 0 2px 4px rgba(27, 28, 26, 0.05), 0 18px 36px rgba(82, 96, 73, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +21,10 @@ html { background: var(--background); color-scheme: light; }
 body {
   min-height: 100dvh;
   margin: 0;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 8% -10%, rgba(215, 232, 203, 0.42), transparent 28rem),
+    radial-gradient(circle at 92% 12%, rgba(233, 238, 230, 0.52), transparent 24rem),
+    var(--background);
   color: var(--ink);
   font-family: var(--font-inter), Arial, sans-serif;
   /* Remove blue flash on tap (iOS/Android) */
@@ -42,6 +47,17 @@ button { cursor: pointer; touch-action: manipulation; }
     background: var(--surface);
     border: 1px solid var(--outline);
     border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 220ms ease, border-color 220ms ease, transform 220ms ease;
+  }
+  .paper-card:hover {
+    border-color: color-mix(in srgb, var(--primary) 42%, var(--outline));
+    box-shadow: var(--shadow-card-hover);
+  }
+  .surface-panel {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(233, 238, 230, 0.62));
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--outline));
+    box-shadow: var(--shadow-card);
   }
   .app-focus:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
   .hide-scrollbar { scrollbar-width: none; }
@@ -112,6 +128,15 @@ button { cursor: pointer; touch-action: manipulation; }
     box-shadow: 0 14px 30px -10px rgba(82, 96, 73, 0.14);
     border-color: var(--primary);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @media print {
@@ -128,4 +153,3 @@ button { cursor: pointer; touch-action: manipulation; }
     display: block !important;
   }
 }
-
