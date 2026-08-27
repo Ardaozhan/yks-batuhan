@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { CURRICULUM_AI_TRAINING_PROMPT } from "@/lib/curriculum-knowledge";
+import { checkRateLimit } from "@/lib/security";
 
 export async function POST(req: Request) {
   try {
+    const rateLimit = checkRateLimit(req, "analytics", { limit: 12, windowMs: 60 * 1000 });
+    if (!rateLimit.success && rateLimit.response) {
+      return rateLimit.response;
+    }
+
     const { context } = await req.json();
 
     const apiKey = process.env.DEEPSEEK_API_KEY;

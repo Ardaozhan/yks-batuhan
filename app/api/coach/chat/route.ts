@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { CURRICULUM_AI_TRAINING_PROMPT } from "@/lib/curriculum-knowledge";
+import { checkRateLimit } from "@/lib/security";
 
 export async function POST(req: Request) {
   try {
+    const rateLimit = checkRateLimit(req, "coach", { limit: 20, windowMs: 60 * 1000 });
+    if (!rateLimit.success && rateLimit.response) {
+      return rateLimit.response;
+    }
+
     const { message, history, context, mode = "strategy" } = await req.json();
 
     if (!message || typeof message !== "string") {
