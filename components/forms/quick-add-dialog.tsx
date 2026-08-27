@@ -58,12 +58,12 @@ export function QuickAddDialog({
       role="dialog"
       aria-modal="true"
       aria-label="Hızlı ekle"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-xs md:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 pb-4 backdrop-blur-xs md:items-center md:p-4"
       onMouseDown={onClose}
     >
       <section
         onMouseDown={(event) => event.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-[var(--outline)] bg-white p-6 shadow-2xl animate-in fade-in"
+        className="w-full max-w-md rounded-2xl border border-[var(--outline)] bg-white p-5 shadow-2xl animate-in fade-in max-h-[90dvh] overflow-y-auto md:p-6"
       >
         <div className="mb-5 flex items-center justify-between pb-3 border-b border-[var(--outline)]">
           <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export function QuickAddDialog({
               <button
                 onClick={() => setKind(null)}
                 aria-label="Seçimlere dön"
-                className="app-focus rounded-lg p-1.5 hover:bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--ink)]"
+                className="app-focus flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -82,9 +82,10 @@ export function QuickAddDialog({
           </div>
           <button
             onClick={onClose}
-            className="app-focus rounded-lg p-1.5 text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)]"
+            aria-label="Kapat"
+            className="app-focus flex h-10 w-10 items-center justify-center rounded-xl text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
@@ -315,7 +316,7 @@ function StudyForm({ subjects, onSuccess }: { subjects: string[]; onSuccess: () 
           <input type="number" min="1" className={inputStyle} {...register("duration")} />
         </Field>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Field label="Doğru">
           <input type="number" min="0" className={inputStyle} {...register("correct")} />
         </Field>

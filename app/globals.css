@@ -17,14 +17,24 @@
 * { box-sizing: border-box; }
 html { background: var(--background); color-scheme: light; }
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   background: var(--background);
   color: var(--ink);
   font-family: var(--font-inter), Arial, sans-serif;
+  /* Remove blue flash on tap (iOS/Android) */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent horizontal overflow */
+  overflow-x: hidden;
 }
+
+/* Prevent iOS auto-zoom on input focus (font-size must be >= 16px) */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
 button, input, textarea { font: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; touch-action: manipulation; }
 
 @layer utilities {
   .font-display { font-family: var(--font-geist), Arial, sans-serif; }

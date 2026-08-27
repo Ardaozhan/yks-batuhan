@@ -169,46 +169,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {appConfig.name}
           </span>
         </Link>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
             aria-label="Komut Menüsü (Ara)"
-            className="app-focus flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="app-focus flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
           >
-            <Search size={18} />
+            <Search size={20} />
           </button>
 
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             aria-label="Bildirimler"
-            className="app-focus relative flex h-9 w-9 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="app-focus relative flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-colors"
           >
-            <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--surface)]"></span>
+            <Bell size={20} />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--surface)]"></span>
           </button>
 
           <button
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Tüm Menüyü Aç"
-            className="app-focus flex h-9 w-9 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
+            className="app-focus flex h-11 w-11 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
           >
-            <Menu size={18} />
+            <Menu size={20} />
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="md:ml-[280px] pb-28 md:pb-12 min-h-screen">{children}</main>
+      <main className="md:ml-[280px] pb-32 md:pb-12 min-h-screen">{children}</main>
 
       {/* Mobile Slide-Over Menu Drawer */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs md:hidden animate-in fade-in"
+          className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs md:hidden animate-in fade-in"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="flex h-full w-[85%] max-w-[320px] flex-col justify-between bg-white p-5 shadow-2xl animate-in slide-in-from-right duration-250"
+            className="flex h-full w-[85%] max-w-[340px] flex-col justify-between bg-[var(--surface)] p-5 shadow-2xl animate-in slide-in-from-right duration-250"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
@@ -310,10 +310,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Bottom Navigation Bar — with iPhone safe area support */}
       <nav
         aria-label="Mobil navigasyon"
-        className="fixed inset-x-0 bottom-0 z-40 flex h-[68px] items-center justify-around rounded-t-2xl border-t border-[var(--outline)] bg-white/95 px-2 backdrop-blur-md md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around rounded-t-2xl border-t border-[var(--outline)] bg-white/95 px-2 backdrop-blur-md md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"
+        style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))", height: "calc(68px + env(safe-area-inset-bottom, 0px))" }}
       >
         <MobileLink href="/today" label="Bugün" Icon={CalendarDays} active={isActive("/today")} />
         <MobileLink href="/subjects" label="Dersler" Icon={BookOpen} active={isActive("/subjects")} />
@@ -334,11 +335,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Notifications Modal / Popover */}
       {notifOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-end p-4 md:p-6 bg-black/20"
+          className="fixed inset-0 z-50 flex items-start justify-center p-4 md:justify-end md:p-6 bg-black/30"
           onClick={() => setNotifOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-[var(--outline)] bg-white p-5 shadow-xl mt-12 md:mr-8 animate-in fade-in slide-in-from-top-4"
+            className="w-full max-w-sm rounded-2xl border border-[var(--outline)] bg-white p-5 shadow-xl mt-16 max-h-[70vh] overflow-y-auto animate-in fade-in slide-in-from-top-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--outline)]">
@@ -348,7 +349,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </h3>
               <button
                 onClick={() => setNotifOpen(false)}
-                className="text-[var(--muted)] hover:text-[var(--ink)]"
+                aria-label="Bildirimleri kapat"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)] transition-colors"
               >
                 <X size={18} />
               </button>
