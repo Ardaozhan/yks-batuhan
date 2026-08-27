@@ -6,14 +6,16 @@ import React from "react";
  * 1. Living & Breathing Empty Plan Illustration
  * Isometric Study Desk / Plan Card with floating checkmark bubbles and gentle glowing ambient mesh.
  */
-export function EmptyPlanIllustration({ className = "w-[5px] h-[5px]" }: { className?: string }) {
+export function EmptyPlanIllustration({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative mx-auto flex items-center justify-center ${className}`}>
+    <div className={`mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)] border border-[#d7e8cb] ${className}`}>
       <svg
+        width="18"
+        height="18"
         viewBox="0 0 200 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-full overflow-visible"
+        className="shrink-0"
       >
         <defs>
           {/* Ambient Glow */}
@@ -115,14 +117,16 @@ export function EmptyPlanIllustration({ className = "w-[5px] h-[5px]" }: { class
  * 2. Living & Breathing Empty Exams Illustration
  * Isometric Exam Paper, Target Compass & Score Stars.
  */
-export function EmptyExamsIllustration({ className = "w-[5px] h-[5px]" }: { className?: string }) {
+export function EmptyExamsIllustration({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative mx-auto flex items-center justify-center ${className}`}>
+    <div className={`mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-200 ${className}`}>
       <svg
+        width="18"
+        height="18"
         viewBox="0 0 200 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-full overflow-visible"
+        className="shrink-0"
       >
         <defs>
           <radialGradient id="exam-glow" cx="50%" cy="50%" r="50%">
@@ -205,14 +209,16 @@ export function EmptyExamsIllustration({ className = "w-[5px] h-[5px]" }: { clas
  * 3. Living & Breathing Empty Mistakes Illustration
  * Smart Open Notebook, Light Rays & Analysis Magnifier.
  */
-export function EmptyMistakesIllustration({ className = "w-[5px] h-[5px]" }: { className?: string }) {
+export function EmptyMistakesIllustration({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative mx-auto flex items-center justify-center ${className}`}>
+    <div className={`mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 ${className}`}>
       <svg
+        width="16"
+        height="16"
         viewBox="0 0 200 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-full overflow-visible"
+        className="shrink-0"
       >
         <defs>
           <radialGradient id="mistake-glow" cx="50%" cy="50%" r="50%">
