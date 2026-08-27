@@ -24,6 +24,8 @@ import {
   getTopics,
 } from "@/lib/study-store";
 import type { Exam, Subject, UserProfile } from "@/types/study";
+import { StudyHeatmap } from "@/components/analytics/study-heatmap";
+import { MistakeTracker } from "@/components/analytics/mistake-tracker";
 
 const filters = ["7 gün", "30 gün", "3 ay", "Tümü"];
 const weeklyMinutes = [
@@ -606,6 +608,12 @@ export function AnalyticsPage() {
             </div>
           )}
         </section>
+
+        {/* 16-Week Activity Heatmap */}
+        <StudyHeatmap streakDays={profile?.streakDays || 7} />
+
+        {/* Mistakes & Weak Topics Tracker */}
+        <MistakeTracker />
       </div>
     </div>
   );

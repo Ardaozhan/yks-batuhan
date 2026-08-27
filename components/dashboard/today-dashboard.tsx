@@ -137,41 +137,41 @@ export function TodayDashboard() {
   }).format(new Date());
 
   return (
-    <div className="mx-auto max-w-[1280px] px-4 py-5 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-10 md:py-10 space-y-6">
       {/* Header Banner */}
-      <header className="mb-6 md:mb-8 border-b border-[var(--outline)] pb-5 md:pb-6">
+      <header className="border-b border-[var(--outline)] pb-6">
         {/* Top row: greeting + badges */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-2.5 py-0.5 rounded-full border border-[#d7e8cb]">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-3 py-1 rounded-full border border-[#d7e8cb]">
                 Günlük Çalışma Alanı
               </span>
             </div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)] md:text-4xl">
-              Günaydın, {profile.name}
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)]">
+              {profile.name && profile.name !== "Öğrenci" ? `Günaydın, ${profile.name}` : "Hoş Geldin"}
             </h1>
-            <p className="mt-1 text-xs text-[var(--muted)] md:text-sm">
+            <p className="mt-1 text-xs sm:text-sm text-[var(--muted)]">
               {todayFormatted} • Gün {profile.dayCount}/{profile.totalDays}
             </p>
           </div>
 
-          {/* Quick Badges - horizontal scroll on tiny screens */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-shrink-0">
-            <div className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white px-3 py-2 text-xs font-medium shadow-xs md:px-4 md:text-sm">
-              <Timer size={16} className="text-[var(--primary)]" />
-              <span className="font-display font-semibold text-[var(--ink)]">
-                YKS&apos;ye {daysLeft} gün
+          {/* Quick Badges */}
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-3.5 py-2 text-xs font-semibold shadow-2xs">
+              <Timer size={16} className="text-[var(--primary)] shrink-0" />
+              <span className="text-[var(--ink)]">
+                YKS&apos;ye <strong>{daysLeft}</strong> gün
               </span>
             </div>
-            <div className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#ffdad6] bg-[#fff5f4] px-3 py-2 text-xs font-medium text-[#93000a] shadow-xs md:px-4 md:text-sm">
-              <Flame size={16} className="text-[#ba1a1a]" />
-              <span className="font-display font-semibold">{profile.streakDays} Gün Seri</span>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-[#ffdad6] bg-[#fff5f4] px-3.5 py-2 text-xs font-semibold text-[#93000a] shadow-2xs">
+              <Flame size={16} className="text-[#ba1a1a] shrink-0" />
+              <span>{profile.streakDays} Gün Seri</span>
             </div>
           </div>
         </div>
 
-        {/* Progress bar — mobile only quick summary */}
+        {/* Progress bar — mobile only */}
         <div className="mt-4 md:hidden">
           <div className="flex items-center justify-between mb-1.5 text-xs text-[var(--muted)]">
             <span className="font-medium text-[var(--ink)]">Bugünün İlerlemesi</span>
@@ -192,27 +192,33 @@ export function TodayDashboard() {
       {/* Main Grid: Left Tasks & Right Stats */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         {/* Left Column: Tasks */}
-        <div className="space-y-5">
-          {/* Action Bar — stacked on mobile */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="text-[var(--primary)]" size={20} />
-              <h2 className="font-display text-xl font-bold text-[var(--ink)] md:text-2xl">Bugünkü Plan</h2>
-              <span className="ml-1 rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-semibold text-[var(--muted)]">
-                {tasks.length}
-              </span>
+        <div className="space-y-4">
+          {/* Action Bar — cleanly aligned flex row */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)]">
+                <CheckCircle2 size={18} />
+              </div>
+              <div>
+                <h2 className="font-display text-base sm:text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                  <span>Bugünkü Plan</span>
+                  <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-xs font-bold text-[var(--muted)]">
+                    {tasks.length}
+                  </span>
+                </h2>
+              </div>
             </div>
 
+            {/* Filter Tabs and Add Button */}
             <div className="flex items-center gap-2">
-              {/* Filter Tabs */}
-              <div className="flex flex-1 rounded-lg border border-[var(--outline)] bg-white p-1 text-xs sm:flex-none">
+              <div className="flex flex-1 sm:flex-none rounded-xl border border-[var(--outline)] bg-[#fbf9f5] p-1 text-xs font-semibold">
                 {(["all", "active", "completed"] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`flex-1 rounded-md px-3 py-1.5 font-medium transition-colors sm:flex-none sm:py-1 ${
+                    className={`flex-1 sm:flex-none rounded-lg px-3 py-1.5 transition-all text-center ${
                       filter === f
-                        ? "bg-[var(--primary)] text-white"
+                        ? "bg-[var(--primary)] text-white shadow-xs"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
                     }`}
                   >
@@ -224,11 +230,10 @@ export function TodayDashboard() {
               {/* Add Button */}
               <button
                 onClick={() => setQuickOpen(true)}
-                className="app-focus inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-[var(--primary-strong)] transition-all active:scale-95"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-[var(--primary)] px-4 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation shrink-0"
               >
                 <Plus size={16} />
-                <span className="hidden sm:inline">Görev Ekle</span>
-                <span className="sm:hidden">Ekle</span>
+                <span>Görev Ekle</span>
               </button>
             </div>
           </div>
@@ -239,38 +244,39 @@ export function TodayDashboard() {
               Görevler yükleniyor...
             </div>
           ) : filteredTasks.length === 0 ? (
-            <div className="paper-card p-8 text-center md:p-10">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-ai)] text-[var(--primary)]">
+            <div className="paper-card p-8 sm:p-12 text-center bg-white shadow-xs">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-ai)] text-[var(--primary)] border border-[#d7e8cb]">
                 <Target size={28} />
               </div>
-              <h3 className="font-display text-base font-semibold text-[var(--ink)] md:text-lg">
+              <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">
                 {filter === "completed"
                   ? "Henüz tamamlanmış görev yok"
                   : "Bugün için bekleyen görev bulunmuyor"}
               </h3>
-              <p className="mt-1 text-xs text-[var(--muted)] max-w-sm mx-auto md:text-sm">
+              <p className="mt-1.5 text-xs sm:text-sm text-[var(--muted)] max-w-md mx-auto leading-relaxed">
                 {filter === "completed"
-                  ? "Tamamladığın görevler burada listelenecek."
-                  : "Yeni bir hedef belirle veya AI Planlayıcı ile otomatik bir çalışma programı oluştur."}
+                  ? "Tamamladığın çalışma hedefleri burada listelenecektir."
+                  : "Hemen yeni bir görev ekleyebilir veya AI Planlayıcı ile sana özel günlük çalışma programını oluşturabilirsin."}
               </p>
-              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={() => setQuickOpen(true)}
-                  className="h-10 rounded-lg bg-[var(--primary)] px-5 text-xs font-semibold text-white hover:bg-[var(--primary-strong)] active:scale-95"
+                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-6 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation"
                 >
-                  + Görev Ekle
+                  <Plus size={16} />
+                  <span>Manuel Görev Ekle</span>
                 </button>
                 <Link
                   href="/planner"
-                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[var(--outline)] bg-white px-5 text-xs font-medium text-[var(--ink)] hover:bg-[var(--surface-muted)]"
+                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-6 text-xs font-bold text-[var(--ink)] hover:bg-[var(--surface-muted)] active:scale-95 transition-all touch-manipulation shadow-2xs"
                 >
-                  <Sparkles size={14} className="text-[var(--primary)]" />
-                  AI Planlayıcı
+                  <Sparkles size={15} className="text-[var(--primary)]" />
+                  <span>AI ile Plan Oluştur</span>
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-1.5 custom-scrollbar">
               {filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -285,25 +291,25 @@ export function TodayDashboard() {
 
         {/* Right Column: Widgets & Summary */}
         <aside className="space-y-4">
-          {/* YKS Countdown Card — hidden on mobile (shown in header) */}
+          {/* YKS Countdown Card */}
           <div className="hidden lg:block paper-card p-6 text-center bg-gradient-to-b from-white to-[#fbf9f5] border-[var(--outline)] shadow-xs">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
               YKS&apos;ye Kalan Süre
             </span>
             <div className="font-display text-5xl font-extrabold text-[var(--primary)] mt-2">
               {daysLeft}
             </div>
-            <span className="text-sm font-medium text-[var(--muted)]">Gün</span>
-            <p className="mt-3 text-xs text-[var(--muted)] border-t border-[var(--outline)] pt-3">
-              Hedef: {profile.targetDepartment}
+            <span className="text-xs font-semibold text-[var(--muted)]">Gün Kaldı</span>
+            <p className="mt-4 text-xs text-[var(--muted)] border-t border-[var(--outline)]/70 pt-3">
+              Hedef: <strong>{profile.targetDepartment}</strong>
               {profile.targetUniversity ? ` (${profile.targetUniversity})` : ""}
             </p>
           </div>
 
-          {/* Today's Progress Card — hidden on mobile (shown in header) */}
+          {/* Today's Progress Card */}
           <div className="hidden lg:block paper-card p-6 bg-white border-[var(--outline)] shadow-xs">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-display text-base font-semibold text-[var(--ink)]">
+              <h3 className="font-display text-sm font-bold text-[var(--ink)]">
                 Bugünün İlerlemesi
               </h3>
               <span className="font-display text-sm font-bold text-[var(--primary)]">
@@ -311,7 +317,7 @@ export function TodayDashboard() {
               </span>
             </div>
 
-            <div className="h-3 w-full overflow-hidden rounded-full bg-[#efeeea]">
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#efeeea]">
               <div
                 className="h-full rounded-full bg-[var(--primary)] transition-all duration-500"
                 style={{ width: `${progress}%` }}
@@ -328,15 +334,14 @@ export function TodayDashboard() {
 
           {/* AI Recommendation Card */}
           <div className="rounded-2xl border border-[#d7e8cb] bg-[#E9EEE6] p-5 relative overflow-hidden shadow-xs">
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/40 blur-xl" />
-            <div className="relative z-10 flex items-center gap-2 text-sm font-bold text-[#4E5D47] mb-2">
-              <Sparkles size={18} className="text-[#526049]" />
-              <span>Yapay Zeka Önerisi</span>
+            <div className="relative z-10 flex items-center gap-2 text-xs font-bold text-[#4E5D47] mb-2 uppercase tracking-wide">
+              <Sparkles size={16} className="text-[var(--primary)]" />
+              <span>Yapay Zeka Müfredat Önerisi</span>
             </div>
             <p className="relative z-10 text-xs leading-relaxed text-[#4E5D47] mb-4">
               {recommendedTopic ? (
                 <>
-                  Müfredatındaki sıradaki öncelikli konu: <strong>{recommendedTopic.name}</strong> ({recommendedSubject}). Bugün bu konuyu çalışarak müfredatında ilerleme kaydedebilirsin.
+                  Sıradaki öncelikli konun: <strong>{recommendedTopic.name}</strong> ({recommendedSubject}). Bugün bu konuyu plana ekleyerek ilerleme kaydedebilirsin.
                 </>
               ) : (
                 <>
@@ -346,18 +351,19 @@ export function TodayDashboard() {
             </p>
             <button
               onClick={handleAddAiSuggestion}
-              className="relative z-10 w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-xs font-semibold text-white hover:bg-[var(--primary-strong)] transition-colors shadow-xs active:scale-95 touch-manipulation"
+              className="relative z-10 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2.5 text-xs font-bold text-white hover:bg-[var(--primary-strong)] transition-all shadow-xs active:scale-95 touch-manipulation"
             >
-              + {recommendedTopic ? `"${recommendedTopic.name}" Plana Ekle` : "Çalışma Ekle"}
+              <Plus size={15} />
+              <span>{recommendedTopic ? `"${recommendedTopic.name}" Plana Ekle` : "Çalışma Ekle"}</span>
             </button>
           </div>
 
           {/* Quick Shortcuts */}
-          <div className="paper-card p-4 bg-white md:p-5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-3">
+          <div className="paper-card p-4 bg-white shadow-2xs">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-3 px-1">
               Hızlı Kısayollar
             </h4>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="space-y-1.5">
               {[
                 { href: "/planner", icon: Sparkles, label: "AI ile Günlük Plan Yap" },
                 { href: "/simulator", icon: Calculator, label: "Sıralama Simülatörü" },
@@ -367,10 +373,10 @@ export function TodayDashboard() {
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-2 rounded-lg border border-[var(--outline)] bg-[var(--surface-muted)] px-3 py-3 text-xs font-medium text-[var(--ink)] hover:bg-[#e9eee6] hover:border-[#d7e8cb] transition-colors lg:border-transparent lg:bg-transparent lg:hover:bg-[var(--surface-muted)] lg:px-2 lg:py-2"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-ai)] hover:text-[var(--primary)] transition-all"
                 >
-                  <Icon size={15} className="text-[var(--primary)] shrink-0" />
-                  <span className="line-clamp-2 lg:line-clamp-1">{label}</span>
+                  <Icon size={16} className="text-[var(--primary)] shrink-0" />
+                  <span className="truncate">{label}</span>
                 </Link>
               ))}
             </div>

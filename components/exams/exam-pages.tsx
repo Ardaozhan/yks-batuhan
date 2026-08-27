@@ -46,14 +46,14 @@ export function ExamsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Filter Pills */}
-          <div className="inline-flex rounded-lg border border-[var(--outline)] bg-white p-1 text-xs">
+          <div className="inline-flex h-9 items-center rounded-xl border border-[var(--outline)] bg-[#fbf9f5] p-1 text-xs font-semibold">
             <button
               onClick={() => setFilter("all")}
-              className={`rounded-md px-3 py-1 font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1 transition-all ${
                 filter === "all"
-                  ? "bg-[var(--primary)] text-white"
+                  ? "bg-[var(--primary)] text-white shadow-xs"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -61,9 +61,9 @@ export function ExamsPage() {
             </button>
             <button
               onClick={() => setFilter("TYT")}
-              className={`rounded-md px-3 py-1 font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1 transition-all ${
                 filter === "TYT"
-                  ? "bg-[var(--primary)] text-white"
+                  ? "bg-[var(--primary)] text-white shadow-xs"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -71,9 +71,9 @@ export function ExamsPage() {
             </button>
             <button
               onClick={() => setFilter("AYT")}
-              className={`rounded-md px-3 py-1 font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1 transition-all ${
                 filter === "AYT"
-                  ? "bg-[var(--primary)] text-white"
+                  ? "bg-[var(--primary)] text-white shadow-xs"
                   : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
@@ -83,7 +83,7 @@ export function ExamsPage() {
 
           <Link
             href="/simulator"
-            className="app-focus inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--primary)] bg-[var(--surface-ai)] px-3.5 text-xs font-bold text-[var(--primary)] hover:bg-[#d7e8cb] transition-all shadow-2xs active:scale-95"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#d7e8cb] bg-[var(--surface-ai)] px-3.5 text-xs font-bold text-[var(--primary)] hover:bg-[#d7e8cb] transition-all shadow-2xs active:scale-95 touch-manipulation"
           >
             <Calculator size={15} />
             <span>Sıralama Simülatörü ↗</span>
@@ -91,7 +91,7 @@ export function ExamsPage() {
 
           <button
             onClick={() => setAddModalOpen(true)}
-            className="app-focus inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--primary)] px-4 text-xs font-semibold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--primary)] px-4 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation"
           >
             <Plus size={16} />
             <span>Deneme Ekle</span>

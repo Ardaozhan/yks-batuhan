@@ -28,6 +28,7 @@ export function SettingsPage() {
     name: defaultProfile.name,
     targetDepartment: defaultProfile.targetDepartment,
     targetUniversity: defaultProfile.targetUniversity,
+    examTargetNet: defaultProfile.examTargetNet,
     dailyTargetHours: 5,
     weeklyTargetQuestions: 1200,
   });
@@ -49,6 +50,7 @@ export function SettingsPage() {
         name: p.name,
         targetDepartment: p.targetDepartment,
         targetUniversity: p.targetUniversity,
+        examTargetNet: p.examTargetNet || 85,
       }));
     };
 
@@ -65,9 +67,10 @@ export function SettingsPage() {
       name: profile.name,
       targetDepartment: profile.targetDepartment,
       targetUniversity: profile.targetUniversity,
+      examTargetNet: Number(profile.examTargetNet) || 85,
     });
     setSaved(true);
-    toast.success("Ayarlarınız ve hedefleriniz başarıyla kaydedildi.");
+    toast.success("Ayarlarınız ve hedef netiniz başarıyla kaydedildi.");
     setTimeout(() => setSaved(false), 2000);
   };
 
@@ -144,10 +147,27 @@ export function SettingsPage() {
             <span>Çalışma Hedefleri</span>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-[var(--ink)] mb-1">
-                Günlük Hedef Çalışma Süresi (Saat)
+                Hedef Sınav Neti (YKS Hedefi)
+              </label>
+              <input
+                type="number"
+                min={10}
+                max={160}
+                step={1}
+                value={profile.examTargetNet}
+                onChange={(e) =>
+                  setProfile({ ...profile, examTargetNet: Number(e.target.value) })
+                }
+                className="w-full rounded-lg border border-[var(--outline)] p-2.5 text-sm outline-none focus:border-[var(--primary)] font-semibold text-[var(--primary)]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                Günlük Hedef Çalışma (Saat)
               </label>
               <input
                 type="number"

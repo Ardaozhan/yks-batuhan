@@ -72,22 +72,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-24 md:pb-0">
-      {/* Desktop Sidebar (280px) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[280px] flex-col border-r border-[var(--outline)] bg-[var(--background)]/90 px-4 py-8 backdrop-blur-sm md:flex">
+      {/* Desktop Sidebar (280px) with custom vertical scrollbar */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[280px] flex-col border-r border-[var(--outline)] bg-[var(--background)]/95 px-4 py-5 backdrop-blur-sm md:flex overflow-y-auto custom-scrollbar">
         {/* Brand */}
         <Link
           href="/today"
-          className="app-focus mb-6 flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--surface-muted)]"
+          className="app-focus mb-4 flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--surface-muted)]"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--outline)] bg-white shadow-xs">
-            <Sparkles size={22} className="text-[var(--primary)]" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--outline)] bg-white shadow-xs">
+            <Sparkles size={20} className="text-[var(--primary)]" />
           </div>
           <div>
-            <span className="font-display text-xl font-bold tracking-tight text-[var(--primary)]">
+            <span className="font-display text-lg font-bold tracking-tight text-[var(--primary)]">
               {appConfig.name}
             </span>
-            <p suppressHydrationWarning className="text-xs text-[var(--muted)] truncate max-w-[170px]">
-              {profile.targetDepartment}
+            <p suppressHydrationWarning className="text-[11px] text-[var(--muted)] truncate max-w-[170px]">
+              {profile.targetDepartment || "Hedef Belirle"}
             </p>
           </div>
         </Link>
@@ -95,19 +95,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Student Mini Card */}
         <Link
           href="/profile"
-          className="app-focus mb-6 flex items-center gap-3 rounded-xl border border-[var(--outline)] bg-white p-3 shadow-[0_2px_8px_rgba(25,26,24,0.03)] hover:border-[var(--primary)] transition-all"
+          className="app-focus mb-4 flex items-center gap-3 rounded-xl border border-[var(--outline)] bg-white p-3 shadow-2xs hover:border-[var(--primary)] transition-all"
         >
-          <div suppressHydrationWarning className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-sm font-semibold text-[var(--primary)]">
+          <div suppressHydrationWarning className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-sm font-semibold text-[var(--primary)]">
             {profile.name.charAt(0)}
           </div>
           <div className="min-w-0 flex-1">
             <p suppressHydrationWarning className="font-display text-sm font-semibold truncate text-[var(--ink)]">
               {profile.name}
             </p>
-            <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
               <span suppressHydrationWarning>Gün {profile.dayCount}/365</span>
               <span className="h-1 w-1 rounded-full bg-[var(--outline)]"></span>
-              <span suppressHydrationWarning className="text-[var(--primary)] font-medium truncate max-w-[100px]">
+              <span suppressHydrationWarning className="text-[var(--primary)] font-medium truncate max-w-[90px]">
                 {profile.targetDepartment || "Hedef Belirle"}
               </span>
             </div>
@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </button>
 
         {/* Main Navigation */}
-        <div className="mb-2 px-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#777a73]">
+        <div className="mb-1.5 px-3 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#777a73]">
           <span>Menü</span>
         </div>
         <nav className="space-y-1">
@@ -141,9 +141,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Quick Add Button */}
           <button
             onClick={() => setQuickOpen(true)}
-            className="app-focus flex min-h-11 w-full items-center gap-3.5 rounded-r-full px-4 text-left text-sm font-medium text-[var(--primary)] hover:bg-[var(--surface-ai)] transition-colors group"
+            className="app-focus flex min-h-10 w-full items-center gap-3.5 rounded-r-full px-4 text-left text-sm font-medium text-[var(--primary)] hover:bg-[var(--surface-ai)] transition-colors group"
           >
-            <CirclePlus size={20} className="transition-transform group-hover:scale-110" />
+            <CirclePlus size={19} className="transition-transform group-hover:scale-110" />
             <span>Hızlı Ekle</span>
           </button>
 
@@ -153,17 +153,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom Section: Account */}
-        <div className="mt-auto space-y-1 pt-4 border-t border-[var(--outline)]">
-          <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-[#777a73]">
+        <div className="mt-4 space-y-1 pt-3 border-t border-[var(--outline)]">
+          <div className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider text-[#777a73]">
             Hesap
           </div>
           <NavLink href="/profile" label="Profil" Icon={UserRound} active={isActive("/profile")} />
           <NavLink href="/settings" label="Ayarlar" Icon={Settings} active={isActive("/settings")} />
           <button
             onClick={() => setFeedbackOpen(true)}
-            className="app-focus flex min-h-11 w-full items-center gap-3.5 rounded-r-full px-4 text-left text-sm font-medium text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)] transition-colors"
+            className="app-focus flex min-h-10 w-full items-center gap-3.5 rounded-r-full px-4 text-left text-sm font-medium text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)] transition-colors"
           >
-            <MessageSquare size={18} />
+            <MessageSquare size={17} />
             <span>Geri Bildirim</span>
           </button>
         </div>
@@ -218,7 +218,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="flex h-full w-[85%] max-w-[340px] flex-col justify-between bg-[var(--surface)] p-5 shadow-2xl animate-in slide-in-from-right duration-250"
+            className="flex h-full w-[85%] max-w-[340px] flex-col justify-between bg-[var(--surface)] p-5 shadow-2xl animate-in slide-in-from-right duration-250 overflow-y-auto custom-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
@@ -333,46 +333,72 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Navigation Bar — with iPhone safe area support */}
       <nav
         aria-label="Mobil navigasyon"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around rounded-t-2xl border-t border-[var(--outline)] bg-white/95 px-2 backdrop-blur-md md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.04)]"
-        style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))", height: "calc(68px + env(safe-area-inset-bottom, 0px))" }}
+        style={{
+          paddingBottom: "max(8px, env(safe-area-inset-bottom))",
+          height: "calc(68px + env(safe-area-inset-bottom, 0px))",
+        }}
+        className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around border-t border-[var(--outline)] bg-[var(--background)]/95 px-2 backdrop-blur-md md:hidden shadow-lg"
       >
-        <MobileLink href="/today" label="Bugün" Icon={CalendarDays} active={isActive("/today")} />
-        <MobileLink href="/subjects" label="Dersler" Icon={BookOpen} active={isActive("/subjects")} />
+        {primaryNav.slice(0, 2).map(({ href, label, icon: Icon }) => {
+          const isAct = isActive(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition-colors touch-manipulation min-w-[56px] min-h-[48px] ${
+                isAct ? "text-[var(--primary)] font-bold" : "text-[var(--muted)]"
+              }`}
+            >
+              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} />
+              <span className="text-[10px] tracking-tight">{label}</span>
+            </Link>
+          );
+        })}
 
-        {/* Center Floating Plus Button */}
+        {/* Center Quick Add Action */}
         <button
           onClick={() => setQuickOpen(true)}
           aria-label="Hızlı ekle"
-          className="app-focus -mt-6 flex h-14 w-14 items-center justify-center rounded-full border-4 border-[var(--background)] bg-[var(--primary)] text-white shadow-lg active:scale-95 transition-transform"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-md active:scale-95 transition-transform touch-manipulation -mt-4 border-2 border-white"
         >
-          <Plus size={26} strokeWidth={2.5} />
+          <Plus size={24} />
         </button>
 
-        <MobileLink href="/exams" label="Deneme" Icon={Award} active={isActive("/exams")} />
-        <MobileLink href="/coach" label="Koçum" Icon={Sparkles} active={isActive("/coach")} />
+        {primaryNav.slice(2, 4).map(({ href, label, icon: Icon }) => {
+          const isAct = isActive(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition-colors touch-manipulation min-w-[56px] min-h-[48px] ${
+                isAct ? "text-[var(--primary)] font-bold" : "text-[var(--muted)]"
+              }`}
+            >
+              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} />
+              <span className="text-[10px] tracking-tight">{label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Notifications Modal / Popover */}
+      {/* Notification Popover Panel */}
       {notifOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center p-4 md:justify-end md:p-6 bg-black/30"
+          className="fixed inset-0 z-50 flex items-start justify-center md:justify-end bg-black/20 p-4 backdrop-blur-xs animate-in fade-in"
           onClick={() => setNotifOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl border border-[var(--outline)] bg-white p-5 shadow-xl mt-16 max-h-[70vh] overflow-y-auto animate-in fade-in slide-in-from-top-4"
+            className="mt-14 w-full max-w-sm rounded-2xl border border-[var(--outline)] bg-white p-4 shadow-xl animate-in zoom-in-95 max-h-[70vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--outline)]">
-              <h3 className="font-display font-semibold text-base flex items-center gap-2">
-                <Bell size={18} className="text-[var(--primary)]" />
-                Bildirimler
-              </h3>
+            <div className="flex items-center justify-between border-b border-[var(--outline)] pb-3">
+              <span className="font-display text-sm font-bold text-[var(--ink)]">Bildirimler</span>
               <button
                 onClick={() => setNotifOpen(false)}
                 aria-label="Bildirimleri kapat"
                 className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--ink)] transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             <div className="mt-3 space-y-3">

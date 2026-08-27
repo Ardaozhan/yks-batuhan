@@ -9,9 +9,17 @@ interface FeedbackDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type FeedbackType = "suggestion" | "bug" | "other";
+
+const feedbackTypes: Array<{ id: FeedbackType; label: string }> = [
+  { id: "suggestion", label: "Öneri / Fikir" },
+  { id: "bug", label: "Hata Bildir" },
+  { id: "other", label: "Genel" },
+];
+
 export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   const { toast } = useToast();
-  const [type, setType] = useState<"suggestion" | "bug" | "other">("suggestion");
+  const [type, setType] = useState<FeedbackType>("suggestion");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -100,15 +108,11 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Type selector */}
             <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: "suggestion", label: "Öneri / Fikir" },
-                { id: "bug", label: "Hata Bildir" },
-                { id: "other", label: "Genel" },
-              ].map((item) => (
+              {feedbackTypes.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setType(item.id as any)}
+                  onClick={() => setType(item.id)}
                   className={`rounded-xl py-2 px-2.5 font-semibold text-center transition-all ${
                     type === item.id
                       ? "bg-[var(--primary)] text-white shadow-xs"

@@ -18,10 +18,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("yks_theme") as Theme | null;
-    if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
-      setThemeState(saved);
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      const saved = localStorage.getItem("yks_theme") as Theme | null;
+      if (!cancelled && saved && (saved === "light" || saved === "dark" || saved === "system")) {
+        setThemeState(saved);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import {
   Lightbulb,
   Minus,
   Plus,
+  Printer,
   RotateCcw,
   Sparkles,
   Target,
@@ -561,11 +562,21 @@ export function PlannerPage() {
 
             <button
               type="button"
+              onClick={() => window.print()}
+              title="Çalışma Programını Yazdır / PDF Olarak Kaydet"
+              className="min-h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-4 text-sm font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all"
+            >
+              <Printer size={16} />
+              <span>Yazdır / PDF</span>
+            </button>
+
+            <button
+              type="button"
               onClick={startGeneration}
-              className="min-h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-6 text-sm font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all"
+              className="min-h-12 inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-5 text-sm font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all"
             >
               <RotateCcw size={16} />
-              <span>Yeniden Oluştur</span>
+              <span>Yeniden</span>
             </button>
           </div>
         </div>

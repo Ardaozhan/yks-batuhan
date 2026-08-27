@@ -284,7 +284,7 @@ export function CommandMenu({
         <div className="overflow-y-auto p-2 divide-y divide-[var(--outline)]/40 divide-dashed">
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-xs text-[var(--muted)]">
-              "{query}" ile eşleşen bir sayfa veya konu bulunamadı.
+              &quot;{query}&quot; ile eşleşen bir sayfa veya konu bulunamadı.
             </div>
           ) : (
             <div className="space-y-1">

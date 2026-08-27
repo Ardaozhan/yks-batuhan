@@ -54,9 +54,15 @@ export function AdminDashboard({ dbProfiles }: { dbProfiles: DbProfile[] }) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (dbProfiles.length > 0 && !selectedStudentId) {
-      setSelectedStudentId(dbProfiles[0].user_id);
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled && dbProfiles.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(dbProfiles[0].user_id);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [dbProfiles, selectedStudentId]);
 
   useEffect(() => {

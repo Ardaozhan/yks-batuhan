@@ -27,14 +27,14 @@ export default function NotFound() {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] transition-all active:scale-95"
           >
             <Home size={15} />
-            <span>Bugün'e Dön</span>
+            <span>Bugün&apos;e Dön</span>
           </Link>
           <Link
             href="/coach"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-[var(--surface)] px-4 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all"
           >
             <Sparkles size={15} className="text-[var(--primary)]" />
-            <span>AI Koç'a Danış</span>
+            <span>AI Koç&apos;a Danış</span>
           </Link>
         </div>
       </div>

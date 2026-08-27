@@ -46,4 +46,41 @@ button { cursor: pointer; touch-action: manipulation; }
   .app-focus:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
   .hide-scrollbar { scrollbar-width: none; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Custom sleek scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1efe9;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c5c8be;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #526049;
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #c5c8be #f1efe9;
+  }
 }
+
+@media print {
+  aside, header, nav, button, .no-print {
+    display: none !important;
+  }
+  body, .paper-card {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #cccccc !important;
+    box-shadow: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
