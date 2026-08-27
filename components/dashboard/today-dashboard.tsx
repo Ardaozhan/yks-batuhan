@@ -178,8 +178,8 @@ export function TodayDashboard() {
                 YKS&apos;ye <strong>{daysLeft}</strong> gün
               </span>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-xl border border-[#ffdad6] bg-[#fff5f4] px-3.5 py-2 text-xs font-semibold text-[#93000a] shadow-2xs">
-              <Flame size={16} className="text-[#ba1a1a] shrink-0" />
+            <div className="inline-flex items-center gap-2 rounded-xl border border-[#ffdad6] bg-[#fff5f4] px-3.5 py-2 text-xs font-semibold text-[#93000a] shadow-2xs group hover-lift">
+              <Flame size={16} className="text-[#ba1a1a] fill-[#ba1a1a] shrink-0 animate-flame" />
               <span>{profile.streakDays} Gün Seri</span>
             </div>
           </div>
@@ -189,11 +189,11 @@ export function TodayDashboard() {
         <div className="mt-4 md:hidden">
           <div className="flex items-center justify-between mb-1.5 text-xs text-[var(--muted)]">
             <span className="font-medium text-[var(--ink)]">Bugünün İlerlemesi</span>
-            <span className="font-bold text-[var(--primary)]">%{progress}</span>
+            <span className="font-bold text-[var(--primary)] animate-spring-pop">%{progress}</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#efeeea]">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#efeeea] shadow-inner">
             <div
-              className="h-full rounded-full bg-[var(--primary)] transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-strong)] transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -209,11 +209,11 @@ export function TodayDashboard() {
         {/* Left Column: Tasks */}
         <div className="space-y-4">
           {/* Action Bar — cleanly aligned flex row */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white/90">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white/90 shadow-xs">
             <div>
               <h2 className="font-display text-base sm:text-lg font-bold text-[var(--ink)] flex items-center gap-2">
                 <span>Bugünkü Plan</span>
-                <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-bold text-[var(--muted)]">
+                <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-bold text-[var(--muted)] animate-scale-in-spring">
                   {tasks.length}
                 </span>
               </h2>
@@ -226,9 +226,9 @@ export function TodayDashboard() {
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`flex-1 sm:flex-none rounded-lg px-3 py-1.5 transition-all text-center ${
+                    className={`flex-1 sm:flex-none rounded-lg px-3 py-1.5 transition-all text-center mobile-tap ${
                       filter === f
-                        ? "bg-[var(--primary)] text-white shadow-xs"
+                        ? "bg-[var(--primary)] text-white shadow-xs font-bold"
                         : "text-[var(--muted)] hover:text-[var(--ink)]"
                     }`}
                   >
@@ -240,7 +240,7 @@ export function TodayDashboard() {
               {/* Add Button */}
               <button
                 onClick={() => setQuickOpen(true)}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-[var(--primary)] px-4 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation shrink-0"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-[var(--primary)] px-4 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation mobile-tap shrink-0"
               >
                 <Plus size={16} />
                 <span>Görev Ekle</span>
@@ -254,7 +254,7 @@ export function TodayDashboard() {
               Görevler yükleniyor...
             </div>
           ) : filteredTasks.length === 0 ? (
-            <div className="paper-card p-6 sm:p-10 text-center bg-white shadow-xs">
+            <div className="paper-card p-6 sm:p-10 text-center bg-white shadow-xs animate-scale-in-spring">
               <EmptyPlanIllustration className="mb-2" />
               <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">
                 {filter === "completed"
@@ -269,14 +269,14 @@ export function TodayDashboard() {
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={() => setQuickOpen(true)}
-                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-6 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation"
+                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-6 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation mobile-tap"
                 >
                   <Plus size={16} />
                   <span>Manuel Görev Ekle</span>
                 </button>
                 <Link
                   href="/planner"
-                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-6 text-xs font-bold text-[var(--ink)] hover:bg-[var(--surface-muted)] active:scale-95 transition-all touch-manipulation shadow-2xs"
+                  className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-6 text-xs font-bold text-[var(--ink)] hover:bg-[var(--surface-muted)] active:scale-95 transition-all touch-manipulation shadow-2xs mobile-tap"
                 >
                   <Sparkles size={15} className="text-[var(--primary)]" />
                   <span>AI ile Plan Oluştur</span>
@@ -300,7 +300,7 @@ export function TodayDashboard() {
         {/* Right Column: Widgets & Summary */}
         <aside className="space-y-4">
           {/* YKS Countdown Card */}
-          <div className="hidden lg:block paper-card p-6 text-center bg-gradient-to-b from-white to-[#fbf9f5] border-[var(--outline)] shadow-xs">
+          <div className="hidden lg:block paper-card p-6 text-center bg-gradient-to-b from-white to-[#fbf9f5] border-[var(--outline)] shadow-xs hover-lift">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
               YKS&apos;ye Kalan Süre
             </span>
@@ -315,7 +315,7 @@ export function TodayDashboard() {
           </div>
 
           {/* Today's Progress Card */}
-          <div className="hidden lg:block paper-card p-6 bg-white border-[var(--outline)] shadow-xs">
+          <div className="hidden lg:block paper-card p-6 bg-white border-[var(--outline)] shadow-xs hover-lift">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-display text-sm font-bold text-[var(--ink)]">
                 Bugünün İlerlemesi
@@ -327,7 +327,7 @@ export function TodayDashboard() {
 
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#efeeea]">
               <div
-                className="h-full rounded-full bg-[var(--primary)] transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-strong)] transition-all duration-700 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -341,7 +341,7 @@ export function TodayDashboard() {
           </div>
 
           {/* AI Recommendation Card */}
-          <div className="rounded-2xl border border-[#d7e8cb] bg-[#E9EEE6] p-5 relative overflow-hidden shadow-xs">
+          <div className="rounded-2xl border border-[#d7e8cb] bg-[#E9EEE6] p-5 relative overflow-hidden shadow-xs hover-lift">
             <div className="relative z-10 flex items-center gap-2 text-xs font-bold text-[#4E5D47] mb-2 uppercase tracking-wide">
               <Sparkles size={16} className="text-[var(--primary)]" />
               <span>Yapay Zeka Müfredat Önerisi</span>
@@ -359,29 +359,28 @@ export function TodayDashboard() {
             </p>
             <button
               onClick={handleAddAiSuggestion}
-              className="relative z-10 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2.5 text-xs font-bold text-white hover:bg-[var(--primary-strong)] transition-all shadow-xs active:scale-95 touch-manipulation"
+              className="relative z-10 inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation mobile-tap"
             >
               <Plus size={15} />
-              <span>{recommendedTopic ? `"${recommendedTopic.name}" Plana Ekle` : "Çalışma Ekle"}</span>
+              <span>Görevi Bugüne Ekle</span>
             </button>
           </div>
 
           {/* Quick Shortcuts */}
-          <div className="paper-card p-4 bg-white shadow-2xs">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-3 px-1">
-              Hızlı Kısayollar
-            </h4>
+          <div className="hidden lg:block paper-card p-5 bg-white border-[var(--outline)] shadow-xs">
+            <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-3">
+              Hızlı Araçlar
+            </h3>
             <div className="space-y-1.5">
               {[
-                { href: "/planner", icon: Sparkles, label: "AI ile Günlük Plan Yap" },
-                { href: "/simulator", icon: Calculator, label: "Sıralama Simülatörü" },
-                { href: "/exams", icon: Target, label: "Son Denemeleri İncele" },
-                { href: "/coach", icon: Flame, label: "Koçuma Soru Sor" },
+                { href: "/simulator", icon: Calculator, label: "ÖSYM Simülatörü" },
+                { href: "/coach", icon: Sparkles, label: "AI Koçuma Danış" },
+                { href: "/planner", icon: Target, label: "Haftalık Planlayıcı" },
               ].map(({ href, icon: Icon, label }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-ai)] hover:text-[var(--primary)] transition-all"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--surface-ai)] hover:text-[var(--primary)] transition-all mobile-tap"
                 >
                   <Icon size={16} className="text-[var(--primary)] shrink-0" />
                   <span className="truncate">{label}</span>
@@ -412,15 +411,15 @@ function TaskCard({
   return (
     <article
       onClick={onToggle}
-      className={`paper-card group relative flex cursor-pointer items-center gap-3 p-3.5 transition-all duration-200 hover:border-[var(--primary)] md:p-4 ${
+      className={`paper-card group relative flex cursor-pointer items-center gap-3 p-3.5 transition-all duration-250 md:p-4 mobile-press-lift ${
         isDone
-          ? "bg-[#faf9f6] opacity-65"
+          ? "bg-[#faf9f6] opacity-65 border-transparent"
           : isActive
           ? "border-l-4 border-l-[var(--primary)] bg-white shadow-xs"
-          : "bg-white"
+          : "bg-white hover:border-[var(--primary)]"
       }`}
     >
-      {/* Checkbox — min 44px touch target */}
+      {/* Checkbox with spring pop animation on completion */}
       <button
         type="button"
         onClick={(e) => {
@@ -428,20 +427,20 @@ function TaskCard({
           onToggle();
         }}
         aria-label={`${task.subject} durumunu değiştir`}
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all touch-manipulation ${
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-all touch-manipulation mobile-tap ${
           isDone
-            ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+            ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-xs"
             : "border-[var(--outline)] hover:border-[var(--primary)] bg-white text-transparent"
         }`}
       >
-        <Check size={18} strokeWidth={3} />
+        <Check size={18} strokeWidth={3} className={isDone ? "animate-spring-pop" : ""} />
       </button>
 
       {/* Info */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <h3
-            className={`font-display text-sm font-semibold ${
+            className={`font-display text-sm font-semibold transition-all ${
               isDone ? "line-through text-[var(--muted)]" : "text-[var(--ink)]"
             }`}
           >
@@ -451,7 +450,7 @@ function TaskCard({
 
           {/* Priority Badge */}
           {task.priority === "high" && (
-            <span className="rounded bg-[#ffdad6]/60 px-1.5 py-0.5 text-[10px] font-semibold text-[#93000a]">
+            <span className="rounded bg-[#ffdad6]/60 px-1.5 py-0.5 text-[10px] font-semibold text-[#93000a] animate-badge-pulse">
               Öncelikli
             </span>
           )}
@@ -471,7 +470,7 @@ function TaskCard({
         onClick={onDelete}
         title="Görevi sil"
         aria-label="Görevi sil"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] opacity-60 sm:opacity-0 sm:group-hover:opacity-100 hover:text-[var(--danger)] hover:bg-[#fff0ee] active:text-[var(--danger)] transition-all touch-manipulation"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] opacity-60 sm:opacity-0 sm:group-hover:opacity-100 hover:text-[var(--danger)] hover:bg-[#fff0ee] active:text-[var(--danger)] transition-all touch-manipulation mobile-tap"
       >
         <Trash2 size={15} />
       </button>

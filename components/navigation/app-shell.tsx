@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ChevronRight,
   CirclePlus,
+  Flame,
   ListTodo,
   Menu,
   MessageSquare,
@@ -182,41 +183,56 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile Sticky Header */}
+      {/* Mobile Sticky Header with Live Streak & Quick Actions */}
       <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between border-b border-[var(--outline)] bg-[var(--background)]/90 px-4 backdrop-blur-md md:hidden">
-        <Link href="/today" className="app-focus flex items-center gap-2.5">
-          <div suppressHydrationWarning className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-xs font-semibold text-[var(--primary)]">
+        <Link href="/today" className="app-focus flex items-center gap-2.5 mobile-tap">
+          <div suppressHydrationWarning className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--primary-soft)] font-display text-xs font-semibold text-[var(--primary)] shadow-2xs">
             {profile.name.charAt(0)}
           </div>
-          <span className="font-display text-lg font-bold text-[var(--primary)]">
-            {appConfig.name}
-          </span>
+          <div className="flex flex-col">
+            <span className="font-display text-base font-bold leading-tight text-[var(--primary)]">
+              {appConfig.name}
+            </span>
+            <span className="text-[10px] text-[var(--muted)] font-medium">Gün {profile.dayCount}/365</span>
+          </div>
         </Link>
-        <div className="flex items-center gap-1">
+
+        {/* Live Animated Streak Badge & Actions */}
+        <div className="flex items-center gap-1.5">
+          {profile.streakDays > 0 && (
+            <Link
+              href="/profile"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 text-orange-600 dark:text-orange-400 text-xs font-bold shadow-2xs mobile-tap"
+            >
+              <Flame size={14} className="animate-flame text-orange-500 fill-orange-500" />
+              <span>{profile.streakDays}</span>
+            </Link>
+          )}
+
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
             aria-label="Komut Menüsü (Ara)"
-            className="app-focus flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="app-focus flex h-10 w-10 items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-all mobile-tap"
           >
-            <Search size={20} />
+            <Search size={19} />
           </button>
 
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             aria-label="Bildirimler"
-            className="app-focus relative flex h-11 w-11 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="app-focus relative flex h-10 w-10 items-center justify-center rounded-full text-[var(--primary)] hover:bg-[var(--surface-muted)] transition-all mobile-tap"
           >
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--surface)]"></span>
+            <Bell size={19} />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[var(--surface)] animate-badge-pulse"></span>
           </button>
 
           <button
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Tüm Menüyü Aç"
-            className="app-focus flex h-11 w-11 items-center justify-center rounded-full border border-[var(--outline)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors shadow-2xs"
+            className="app-focus flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--outline)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all shadow-2xs mobile-tap"
           >
-            <Menu size={20} />
+            <Menu size={19} />
           </button>
         </div>
       </header>
@@ -343,7 +359,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation Bar — with iPhone safe area support */}
+      {/* Mobile Bottom Navigation Bar — with iPhone safe area support and active spring indicator */}
       <nav
         aria-label="Mobil navigasyon"
         style={{
@@ -358,23 +374,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition-colors touch-manipulation min-w-[56px] min-h-[48px] ${
-                isAct ? "text-[var(--primary)] font-bold" : "text-[var(--muted)]"
+              className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-1.5 transition-all touch-manipulation min-w-[56px] min-h-[48px] mobile-tap ${
+                isAct
+                  ? "text-[var(--primary)] font-bold"
+                  : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
-              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} />
+              {isAct && (
+                <span className="absolute inset-1 rounded-xl bg-[var(--surface-ai)] -z-10 animate-scale-in-spring"></span>
+              )}
+              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} className={isAct ? "animate-spring-pop" : ""} />
               <span className="text-[10px] tracking-tight">{label}</span>
             </Link>
           );
         })}
 
-        {/* Center Quick Add Action */}
+        {/* Center Quick Add Action with Pulse Ring */}
         <button
           onClick={() => setQuickOpen(true)}
           aria-label="Hızlı ekle"
-          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-md active:scale-95 transition-transform touch-manipulation -mt-4 border-2 border-white"
+          className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-white shadow-md active:scale-90 active:rotate-90 transition-all duration-300 touch-manipulation -mt-4 border-2 border-white hover:bg-[var(--primary-strong)] group"
         >
-          <Plus size={24} />
+          <span className="absolute inset-0 rounded-2xl bg-[var(--primary)] opacity-40 animate-ping -z-10 duration-1000"></span>
+          <Plus size={24} className="transition-transform duration-300 group-hover:scale-110" />
         </button>
 
         {primaryNav.slice(2, 4).map(({ href, label, icon: Icon }) => {
@@ -383,11 +405,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-1.5 transition-colors touch-manipulation min-w-[56px] min-h-[48px] ${
-                isAct ? "text-[var(--primary)] font-bold" : "text-[var(--muted)]"
+              className={`relative flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-1.5 transition-all touch-manipulation min-w-[56px] min-h-[48px] mobile-tap ${
+                isAct
+                  ? "text-[var(--primary)] font-bold"
+                  : "text-[var(--muted)] hover:text-[var(--ink)]"
               }`}
             >
-              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} />
+              {isAct && (
+                <span className="absolute inset-1 rounded-xl bg-[var(--surface-ai)] -z-10 animate-scale-in-spring"></span>
+              )}
+              <Icon size={20} strokeWidth={isAct ? 2.5 : 2} className={isAct ? "animate-spring-pop" : ""} />
               <span className="text-[10px] tracking-tight">{label}</span>
             </Link>
           );

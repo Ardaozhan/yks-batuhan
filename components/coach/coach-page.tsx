@@ -389,34 +389,34 @@ export function CoachPage() {
       {/* 3. Main Chat Container */}
       <div className="paper-card flex-1 flex flex-col justify-between p-3 sm:p-4 md:p-5 bg-white/90 overflow-hidden min-h-0">
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto space-y-3.5 sm:space-y-5 pr-1 sm:pr-2">
+        <div className="flex-1 overflow-y-auto space-y-3.5 sm:space-y-5 pr-1 sm:pr-2 custom-scrollbar">
           {messages.map((m) => (
-            <div key={m.id} className="space-y-2.5">
+            <div key={m.id} className="space-y-2.5 animate-scale-in-spring">
               {m.sender === "user" ? (
                 /* User Message */
                 <div className="flex justify-end">
-                  <div className="max-w-[90%] sm:max-w-[80%] rounded-2xl rounded-tr-xs bg-[var(--primary)] px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white shadow-2xs leading-relaxed break-words">
+                  <div className="max-w-[90%] sm:max-w-[80%] rounded-2xl rounded-tr-xs bg-[var(--primary)] px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white shadow-2xs leading-relaxed break-words hover-lift">
                     {m.text}
                   </div>
                 </div>
               ) : (
                 /* Coach Message */
                 <div className="flex items-start gap-2.5 sm:gap-3 max-w-[100%] sm:max-w-[95%]">
-                  <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)] mt-0.5 shadow-2xs">
+                  <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)] mt-0.5 shadow-2xs animate-spring-pop">
                     <Bot size={15} />
                   </div>
                   <div className="min-w-0 flex-1 space-y-2.5">
                     {/* Main text bubble */}
-                    <div className="rounded-2xl rounded-tl-xs border border-[#d7e8cb] bg-[#f4f8f2] p-3 sm:p-4 text-xs sm:text-sm text-[var(--ink)] leading-relaxed shadow-2xs relative group">
+                    <div className="rounded-2xl rounded-tl-xs border border-[#d7e8cb] bg-[#f4f8f2] p-3 sm:p-4 text-xs sm:text-sm text-[var(--ink)] leading-relaxed shadow-2xs relative group hover-lift">
                       {/* Text-to-speech button */}
                       <button
                         type="button"
                         onClick={() => handleToggleSpeech(m.id, m.text)}
                         title={speakingId === m.id ? "Okumayı Durdur" : "Sesli Dinle"}
-                        className="absolute right-2 top-2 p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/80 transition-colors touch-manipulation"
+                        className="absolute right-2 top-2 p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/80 transition-colors touch-manipulation mobile-tap"
                       >
                         {speakingId === m.id ? (
-                          <VolumeX size={15} className="text-red-600 animate-pulse" />
+                          <VolumeX size={15} className="text-red-600 animate-badge-pulse" />
                         ) : (
                           <Volume2 size={15} />
                         )}

@@ -84,7 +84,7 @@ button { cursor: pointer; touch-action: manipulation; }
     scrollbar-color: #c5c8be #f1efe9;
   }
 
-  /* GPU-accelerated Landing Animations */
+  /* GPU-accelerated Landing & Micro Animations */
   @keyframes float-slow {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-7px); }
@@ -100,6 +100,42 @@ button { cursor: pointer; touch-action: manipulation; }
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+  }
+
+  /* Mobile-Synchronized Spring & Gesture Keyframes */
+  @keyframes spring-pop {
+    0% { transform: scale(0.85); opacity: 0.7; }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes flame-flicker {
+    0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 3px rgba(234, 88, 12, 0.4)); }
+    25% { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.7)); }
+    50% { transform: scale(0.96) rotate(-2deg); filter: drop-shadow(0 0 4px rgba(234, 88, 12, 0.5)); }
+    75% { transform: scale(1.08) rotate(1deg); filter: drop-shadow(0 0 7px rgba(249, 115, 22, 0.65)); }
+  }
+
+  @keyframes slide-up-sheet {
+    0% { transform: translateY(100%); opacity: 0.5; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes scale-in-spring {
+    0% { transform: scale(0.92); opacity: 0; }
+    70% { transform: scale(1.03); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.22); opacity: 0.85; }
+  }
+
+  @keyframes celebration-burst {
+    0% { transform: scale(0); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.9; }
+    100% { transform: scale(1.8); opacity: 0; }
   }
 
   .animate-float {
@@ -120,6 +156,45 @@ button { cursor: pointer; touch-action: manipulation; }
     animation: shimmer 3s infinite;
   }
 
+  .animate-spring-pop {
+    animation: spring-pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  }
+
+  .animate-flame {
+    animation: flame-flicker 2.6s ease-in-out infinite;
+    transform-origin: center bottom;
+    will-change: transform, filter;
+  }
+
+  .animate-scale-in-spring {
+    animation: scale-in-spring 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-slide-up-sheet {
+    animation: slide-up-sheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  /* Mobile Touch Haptics & Feedback */
+  .mobile-tap {
+    transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease;
+    touch-action: manipulation;
+  }
+  .mobile-tap:active {
+    transform: scale(0.94);
+    opacity: 0.88;
+  }
+
+  .mobile-press-lift {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mobile-press-lift:active {
+    transform: scale(0.97) translateY(1px);
+  }
+
   .hover-lift {
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
     transform: translateZ(0);
@@ -129,6 +204,9 @@ button { cursor: pointer; touch-action: manipulation; }
     transform: translateY(-4px);
     box-shadow: 0 14px 30px -10px rgba(82, 96, 73, 0.14);
     border-color: var(--primary);
+  }
+  .hover-lift:active {
+    transform: translateY(-1px) scale(0.985);
   }
 
   .gpu-layer {
