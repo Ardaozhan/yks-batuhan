@@ -6,7 +6,7 @@ const publicPaths = new Set([
   "/login",
   "/register",
   "/forgot-password",
-  "/simulator",
+  "/auth/callback",
   "/privacy",
   "/terms",
 ]);
@@ -23,7 +23,6 @@ export async function updateSession(request: NextRequest) {
 
   // Static files and metadata routes are always public
   if (
-    pathname.startsWith("/api") ||
     pathname.startsWith("/icon") ||
     pathname.startsWith("/apple-icon") ||
     pathname.startsWith("/opengraph-image") ||
@@ -57,16 +56,22 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { data: claims } = await supabase.auth.getClaims();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  const isAuthenticated = Boolean(claims && !claims.is_anonymous);
   const isPublic = publicPaths.has(pathname);
 
-  // If not logged in and trying to access a protected app page, redirect to login
-  if (!claims && !isPublic) {
+  if (!isAuthenticated && pathname.startsWith("/api")) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  // Anonymous sessions can use public pages but cannot enter protected routes.
+  if (!isAuthenticated && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // If already logged in and visiting login/register, redirect to today workspace
-  if (claims && authFormPaths.has(pathname)) {
+  if (isAuthenticated && authFormPaths.has(pathname)) {
     return NextResponse.redirect(new URL("/today", request.url));
   }
 

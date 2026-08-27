@@ -9,8 +9,6 @@ import {
   Calculator,
   CalendarDays,
   CheckCircle2,
-  ChevronRight,
-  Command,
   ListTodo,
   Plus,
   Search,

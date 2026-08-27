@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, MessageSquare, Send, Sparkles, X } from "lucide-react";
+import { CheckCircle2, MessageSquare, Send, X } from "lucide-react";
 import { useToast } from "@/components/ui/toaster";
 
 interface FeedbackDialogProps {
@@ -44,7 +44,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           createdAt: new Date().toISOString(),
         });
         localStorage.setItem("yks_feedback", JSON.stringify(existing));
-      } catch (err) {
+      } catch {
         // ignore
       }
 

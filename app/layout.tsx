@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 
-const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin", "latin-ext"] });
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -73,7 +74,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Toaster />
         <CookieBanner />
-        <script
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {

@@ -1,4 +1,4 @@
-export type TaskStatus = "pending" | "active" | "completed";
+﻿export type TaskStatus = "pending" | "active" | "completed";
 export type TaskPriority = "high" | "normal" | "low";
 export type TopicStatus = "not_started" | "in_progress" | "completed";
 export type ExamType = "TYT" | "AYT";

@@ -29,13 +29,13 @@ import { MistakeTracker } from "@/components/analytics/mistake-tracker";
 
 const filters = ["7 gün", "30 gün", "3 ay", "Tümü"];
 const weeklyMinutes = [
-  { day: "Pzt", mins: 240, percent: 55 },
-  { day: "Sal", mins: 310, percent: 70 },
-  { day: "Çar", mins: 270, percent: 62 },
-  { day: "Per", mins: 360, percent: 82 },
-  { day: "Cum", mins: 290, percent: 66 },
-  { day: "Cmt", mins: 420, percent: 95 },
-  { day: "Paz", mins: 330, percent: 75 },
+  { day: "Pzt", mins: 0, percent: 0 },
+  { day: "Sal", mins: 0, percent: 0 },
+  { day: "Çar", mins: 0, percent: 0 },
+  { day: "Per", mins: 0, percent: 0 },
+  { day: "Cum", mins: 0, percent: 0 },
+  { day: "Cmt", mins: 0, percent: 0 },
+  { day: "Paz", mins: 0, percent: 0 },
 ];
 
 type AiReportData = {
@@ -61,9 +61,11 @@ export function AnalyticsPage() {
 
   const [aiReport, setAiReport] = useState<AiReportData | null>(null);
   const [aiLoading, setAiLoading] = useState<boolean>(true);
+  const [aiError, setAiError] = useState<string>("");
 
   const fetchAiAnalysis = async () => {
     setAiLoading(true);
+    setAiError("");
     const p = getProfile();
     const subjs = getSubjects();
     const tops = getTopics();
@@ -98,42 +100,8 @@ export function AnalyticsPage() {
       const data = await res.json();
       setAiReport(data);
     } catch {
-      const compCount = completed.length;
-      const score = Math.min(95, Math.max(20, Math.round((compCount / 160) * 100) + 15));
-      setAiReport({
-        readinessScore: score,
-        executiveSummary: `Mevcut çalışma verilerine göre ${p?.targetDepartment || "hedefin"} için temel konuları ilerletiyorsun. Düzenli deneme çözümü ve eksik konuları kapatma ritmi netlerini hızla yukarı taşıyacaktır.`,
-        projectedNet: p ? `${p.examTargetNet - 12} - ${p.examTargetNet - 4} Net` : "70 - 80 Net",
-        tempoEvaluation: "İstikrarlı çalışma alışkanlığı kazanılıyor, test çözme sıklığı artırılmalı.",
-        strengths: [
-          "Müfredat konularını sistemli olarak takip etmeye başladın.",
-          "Çalışma serisini koruyarak günlük ritim oluşturuyorsun.",
-        ],
-        bottlenecks: [
-          "Deneme sınavı sıklığını haftalık rutine oturtmalısın.",
-          "Yanlış yapılan soruları hata defterine kaydedip haftalık tekrar etmelisin.",
-        ],
-        actionRoadmap: [
-          {
-            step: 1,
-            title: "TYT Paragraf & Problem Rutini",
-            description: "Her sabah 20 paragraf ve 10 problem sorusu ile süre kontrolü sağla.",
-            expectedGain: "+3-4 Net",
-          },
-          {
-            step: 2,
-            title: "Öncelikli Eksik Konuları Kapatma",
-            description: "Müfredatta sırada bekleyen ilk 3 konuyu tamamlayarak soru bankasını tara.",
-            expectedGain: "+4-5 Net",
-          },
-          {
-            step: 3,
-            title: "Haftalık Genel Deneme ve Yanlış Analizi",
-            description: "Haftada 1 gün süre tutarak tam deneme çöz ve yanlışların video çözümünü incele.",
-            expectedGain: "+3 Net",
-          },
-        ],
-      });
+      setAiReport(null);
+      setAiError("AI analizine şu anda ulaşılamıyor. Lütfen daha sonra tekrar dene.");
     } finally {
       setAiLoading(false);
     }
@@ -177,46 +145,13 @@ export function AnalyticsPage() {
         const data = await res.json();
         if (active) {
           setAiReport(data);
+          setAiError("");
           setAiLoading(false);
         }
       } catch {
-        const compCount = completed.length;
-        const score = Math.min(95, Math.max(20, Math.round((compCount / 160) * 100) + 15));
         if (active) {
-          setAiReport({
-            readinessScore: score,
-            executiveSummary: `Mevcut çalışma verilerine göre ${p?.targetDepartment || "hedefin"} için temel konuları ilerletiyorsun. Düzenli deneme çözümü ve eksik konuları kapatma ritmi netlerini hızla yukarı taşıyacaktır.`,
-            projectedNet: p ? `${p.examTargetNet - 12} - ${p.examTargetNet - 4} Net` : "70 - 80 Net",
-            tempoEvaluation: "İstikrarlı çalışma alışkanlığı kazanılıyor, test çözme sıklığı artırılmalı.",
-            strengths: [
-              "Müfredat konularını sistemli olarak takip etmeye başladın.",
-              "Çalışma serisini koruyarak günlük ritim oluşturuyorsun.",
-            ],
-            bottlenecks: [
-              "Deneme sınavı sıklığını haftalık rutine oturtmalısın.",
-              "Yanlış yapılan soruları hata defterine kaydedip haftalık tekrar etmelisin.",
-            ],
-            actionRoadmap: [
-              {
-                step: 1,
-                title: "TYT Paragraf & Problem Rutini",
-                description: "Her sabah 20 paragraf ve 10 problem sorusu ile süre kontrolü sağla.",
-                expectedGain: "+3-4 Net",
-              },
-              {
-                step: 2,
-                title: "Öncelikli Eksik Konuları Kapatma",
-                description: "Müfredatta sırada bekleyen ilk 3 konuyu tamamlayarak soru bankasını tara.",
-                expectedGain: "+4-5 Net",
-              },
-              {
-                step: 3,
-                title: "Haftalık Genel Deneme ve Yanlış Analizi",
-                description: "Haftada 1 gün süre tutarak tam deneme çöz ve yanlışların video çözümünü incele.",
-                expectedGain: "+3 Net",
-              },
-            ],
-          });
+          setAiReport(null);
+          setAiError("AI analizine şu anda ulaşılamıyor. Lütfen daha sonra tekrar dene.");
           setAiLoading(false);
         }
       }
@@ -346,6 +281,10 @@ export function AnalyticsPage() {
           <div className="py-16 text-center text-xs text-[var(--muted)] flex flex-col items-center justify-center gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-3 border-[var(--surface-muted)] border-t-[var(--primary)]" />
             <span>DeepSeek yapay zekası performans verilerini inceliyor...</span>
+          </div>
+        ) : aiError ? (
+          <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-800">
+            {aiError}
           </div>
         ) : aiReport ? (
           <div className="mt-6 space-y-6 animate-in fade-in">

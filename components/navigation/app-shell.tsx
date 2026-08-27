@@ -468,27 +468,3 @@ function NavLink({
     </Link>
   );
 }
-
-function MobileLink({
-  href,
-  label,
-  Icon,
-  active,
-}: {
-  href: string;
-  label: string;
-  Icon: React.ElementType;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`app-focus flex min-h-11 w-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-medium transition-colors ${
-        active ? "text-[var(--primary)] font-semibold" : "text-[var(--muted)]"
-      }`}
-    >
-      <Icon size={20} fill={active ? "currentColor" : "none"} />
-      <span>{label}</span>
-    </Link>
-  );
-}

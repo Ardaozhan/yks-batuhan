@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -57,7 +57,7 @@ const modeConfig: Record<
   strategy: {
     label: "Net & Strateji",
     icon: Target,
-    desc: "Eksik konu tespiti, net artırma taktikleri ve sınav analizi",
+    desc: "Eksik tespiti, net artırma taktikleri ve sınav analizi",
     quickPrompts: [
       "Bugün ne çalışmalıyım?",
       "Eksiklerimi ve zayıf alanlarımı analiz et",
@@ -67,9 +67,9 @@ const modeConfig: Record<
     ],
   },
   tutor: {
-    label: "Konu Anlatıcı (Hoca)",
+    label: "Konu Anlatıcı",
     icon: GraduationCap,
-    desc: "Zorlandığın formülleri, soru tiplerini ve kavramları adım adım açıklar",
+    desc: "Zorlandığın formülleri ve soru kalıplarını açıklar",
     quickPrompts: [
       "Fonksiyonlar konusunun temel mantığını özetle",
       "Permütasyon ve kombinasyon farkını soruyla anlat",
@@ -79,9 +79,9 @@ const modeConfig: Record<
     ],
   },
   motivation: {
-    label: "Motivasyon & Disiplin",
+    label: "Motivasyon",
     icon: Flame,
-    desc: "Sınav kaygısı, odaklanma ve zihinsel dayanıklılık koçluğu",
+    desc: "Sınav kaygısı, odaklanma ve zihinsel dayanıklılık",
     quickPrompts: [
       "Bugün hiç ders çalışma isteğim yok, beni motive et",
       "Sınav kaygımı ve net stresimi nasıl yönetirim?",
@@ -93,7 +93,7 @@ const modeConfig: Record<
   planner: {
     label: "Hızlı Planlayıcı",
     icon: Calendar,
-    desc: "Kalan zamanına ve enerjine göre saatlik blok çalışma programı yapar",
+    desc: "Kalan zamanına göre saatlik blok program yapar",
     quickPrompts: [
       "Bugün için 4 saatlik blok çalışma programı hazırla",
       "Akşam 18:00 - 23:00 arası için verimli bir plan çıkar",
@@ -113,44 +113,43 @@ export function CoachPage() {
   const [loading, setLoading] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [addedCards, setAddedCards] = useState<Record<string, boolean>>({});
-  const [expandedReason, setExpandedReason] = useState<string | null>("m-init-1");
+  const [expandedReason, setExpandedReason] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "m-init-1",
       sender: "coach",
-      text: "Merhaba! DeepSeek yapay zekasıyla güçlendirilmiş YKS Koçun olarak yanındayım. Hedeflerini, tamamladığın konuları ve deneme netlerini inceleyerek sana özel stratejiler, konu anlatımları ve çalışma planları sunuyorum. Üstteki modlardan birini seçebilir veya aklındaki soruyu hemen sorabilirsin!",
-      cards: [
-        {
-          title: "Hedef ve Çalışma Planı",
-          priority: "Öncelikli",
-          description:
-            "Günlük çalışma saatlerini ve hedeflerini belirleyerek güne organize başla.",
-          actionText: "Planlayıcıya Git",
-          actionHref: "/planner",
-          iconType: "timer",
-        },
-        {
-          title: "Ders ve Konu Müfredatı",
-          priority: "Tavsiye",
-          description:
-            "TYT ve AYT ders müfredatındaki konuları incele ve çalıştıklarını tikle.",
-          actionText: "Dersleri İncele",
-          actionHref: "/subjects",
-          iconType: "layers",
-        },
-      ],
-      explanation: {
-        summary: "YKS Koçun senin için neler yapabilir?",
-        points: [
-          "Net & Strateji: Deneme netlerini ve konu eksiklerini analiz eder.",
-          "Konu Anlatıcı: Anlamadığın formülleri ve soru kalıplarını özel ders gibi anlatır.",
-          "Motivasyon: Zorlandığın anlarda enerjini ve disiplinini yükseltir.",
-          "Hızlı Planlayıcı: Kalan saatlerine göre net bir günlük program çıkarır.",
-        ],
-      },
+      text: "Merhaba! DeepSeek V3 destekli YKS Koçun olarak yanındayım. Eksik konularını, deneme netlerini ve çalışma hedeflerini analiz edip sana özel stratejiler sunmaya hazırım. Aklındaki soruyu sorabilir veya aşağıdaki önerilen konulardan başlayabilirsin!",
     },
   ]);
+
+  // Personalize welcome message after client mount without hydration mismatch
+  useEffect(() => {
+    const profile = getProfile();
+    if (profile.name && profile.name !== "Öğrenci") {
+      const targetInfo = profile.targetDepartment
+        ? ` Hedefin: ${profile.targetDepartment}${profile.targetUniversity ? ` (${profile.targetUniversity})` : ""}.`
+        : "";
+      setMessages((prev) => {
+        if (prev.length === 1 && prev[0].id === "m-init-1") {
+          return [
+            {
+              id: "m-init-1",
+              sender: "coach",
+              text: `Merhaba ${profile.name}! DeepSeek V3 destekli YKS Koçun olarak yanındayım.${targetInfo} Eksik konularını, deneme netlerini ve çalışma hedeflerini analiz edip sana özel stratejiler sunmaya hazırım. Aklındaki soruyu sorabilir veya aşağıdaki önerilen konulardan başlayabilirsin!`,
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, []);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   // Handle Speech synthesis cleanup
   useEffect(() => {
@@ -210,11 +209,14 @@ export function CoachPage() {
       window.speechSynthesis.cancel();
       setSpeakingId(null);
     }
+    const profile = getProfile();
+    const name = profile.name ? profile.name : "Öğrenci";
+
     setMessages([
       {
         id: createMsgId("coach"),
         sender: "coach",
-        text: "Yeni sohbet oturumu başlatıldı. Hazırım, aklındaki soruyu veya merak ettiğin konuyu sorabilirsin!",
+        text: `Yeni sohbet oturumu başlatıldı. Hazırım ${name}, aklındaki soruyu veya merak ettiğin konuyu sorabilirsin!`,
       },
     ]);
   };
@@ -292,29 +294,16 @@ export function CoachPage() {
       };
 
       setMessages((prev) => [...prev, coachReply]);
-    } catch (err) {
-      console.error("Coach fetch error:", err);
-      const targetDept =
-        profile?.targetDepartment && profile.targetDepartment !== "Hedef Belirle"
-          ? profile.targetDepartment
-          : "üniversite hedefin";
-
-      const coachReply: Message = {
-        id: createMsgId("coach"),
-        sender: "coach",
-        text: `"${query}" sorunu ${targetDept} hedefin doğrultusunda inceledim. YKS hazırlığında başarının anahtarı; her gün düzenli soru çözmek, yanlış yaptığın soruları 'Hata Defteri'ne kaydedip tekrar etmek ve haftalık deneme sürelerini disiplinle ölçmektir.`,
-        cards: [
-          {
-            title: "Ders Müfredatı",
-            priority: "Tavsiye",
-            description: "Çalıştığın konuları tikleyerek ilerlemeni güncel tut.",
-            actionText: "Dersleri İncele",
-            actionHref: "/subjects",
-            iconType: "timer",
-          },
-        ],
-      };
-      setMessages((prev) => [...prev, coachReply]);
+    } catch (error) {
+      console.error("Coach fetch error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createMsgId("coach-error"),
+          sender: "coach",
+          text: "AI Koç şu anda yanıt veremiyor. Lütfen internet bağlantınızı kontrol edip kısa süre sonra tekrar deneyin.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -323,24 +312,24 @@ export function CoachPage() {
   const activeModeData = modeConfig[mode];
 
   return (
-    <div className="mx-auto max-w-[880px] px-4 py-6 md:px-10 md:py-8 flex flex-col min-h-[calc(100vh-80px)]">
-      {/* Header */}
-      <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--outline)] pb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface-ai)] text-[var(--primary)] shadow-xs border border-[#d7e8cb]">
-            <Bot size={26} />
+    <div className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 md:px-8 flex flex-col h-[calc(100dvh-64px)] sm:h-[calc(100vh-80px)]">
+      {/* 1. Header Bar */}
+      <header className="mb-3 flex items-center justify-between gap-3 border-b border-[var(--outline)] pb-3 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-ai)] text-[var(--primary)] shadow-xs border border-[#d7e8cb]">
+            <Bot size={22} className="sm:size-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="font-display text-lg sm:text-xl font-bold tracking-tight text-[var(--ink)] truncate">
                 AI Koçum
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
-                <Sparkles size={11} /> DeepSeek V3
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-800 shrink-0">
+                <Sparkles size={10} /> DeepSeek V3
               </span>
             </div>
-            <p className="text-xs text-[var(--muted)] mt-0.5">
-              Canlı çalışma istatistiklerine ve hedeflerine göre özelleştirilmiş rehberlik
+            <p className="text-[11px] text-[var(--muted)] truncate">
+              ÖSYM müfredatı ve çalışma verilerine göre rehberlik
             </p>
           </div>
         </div>
@@ -349,17 +338,17 @@ export function CoachPage() {
         <button
           type="button"
           onClick={handleClearChat}
-          title="Sohbeti Temizle"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white px-3 py-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:border-[var(--primary)] transition-all self-start sm:self-auto active:scale-95"
+          title="Yeni Sohbet Başlat"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--outline)] bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] hover:border-[var(--primary)] transition-all shrink-0 active:scale-95 touch-manipulation shadow-2xs"
         >
-          <RotateCcw size={14} />
-          <span>Yeni Sohbet</span>
+          <RotateCcw size={13} />
+          <span className="hidden sm:inline">Yeni Sohbet</span>
         </button>
       </header>
 
-      {/* Coach Role / Mode Selector Tabs */}
-      <div className="mb-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      {/* 2. Coach Role / Mode Selector (Horizontal swipe on mobile, clean grid on tablet/desktop) */}
+      <div className="mb-3 shrink-0">
+        <div className="flex gap-2 overflow-x-auto pb-1.5 sm:pb-0 scrollbar-none sm:grid sm:grid-cols-4">
           {(Object.keys(modeConfig) as CoachMode[]).map((mKey) => {
             const mData = modeConfig[mKey];
             const Icon = mData.icon;
@@ -369,20 +358,20 @@ export function CoachPage() {
                 key={mKey}
                 type="button"
                 onClick={() => setMode(mKey)}
-                className={`flex flex-col items-start p-2.5 sm:p-3 rounded-xl border text-left transition-all active:scale-95 touch-manipulation min-h-[54px] ${
+                className={`flex items-center sm:items-start sm:flex-col p-2 sm:p-2.5 rounded-xl border text-left transition-all active:scale-95 touch-manipulation shrink-0 sm:shrink min-h-[42px] sm:min-h-[50px] ${
                   isSelected
-                    ? "border-[var(--primary)] bg-[var(--surface-ai)] shadow-xs"
-                    : "border-[var(--outline)] bg-white hover:border-[var(--primary)]"
+                    ? "border-[var(--primary)] bg-[var(--surface-ai)] shadow-2xs font-bold text-[var(--primary)]"
+                    : "border-[var(--outline)] bg-white hover:border-[var(--primary)] text-[var(--ink)]"
                 }`}
               >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--ink)]">
+                <div className="flex items-center gap-1.5 text-xs">
                   <Icon
-                    size={15}
+                    size={14}
                     className={isSelected ? "text-[var(--primary)]" : "text-[var(--muted)]"}
                   />
-                  <span>{mData.label}</span>
+                  <span className="whitespace-nowrap">{mData.label}</span>
                 </div>
-                <span className="text-[10px] text-[var(--muted)] line-clamp-1 mt-1">
+                <span className="hidden sm:block text-[10px] text-[var(--muted)] line-clamp-1 mt-0.5 font-normal">
                   {mData.desc}
                 </span>
               </button>
@@ -391,68 +380,68 @@ export function CoachPage() {
         </div>
       </div>
 
-      {/* Main Chat Box */}
-      <div className="paper-card flex-1 flex flex-col justify-between p-3.5 sm:p-4 md:p-6 bg-white overflow-hidden shadow-xs">
+      {/* 3. Main Chat Container */}
+      <div className="paper-card flex-1 flex flex-col justify-between p-3 sm:p-4 md:p-5 bg-white overflow-hidden shadow-xs min-h-0">
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pr-1 max-h-[52vh] sm:max-h-[58vh]">
+        <div className="flex-1 overflow-y-auto space-y-3.5 sm:space-y-5 pr-1 sm:pr-2">
           {messages.map((m) => (
-            <div key={m.id} className="space-y-3">
+            <div key={m.id} className="space-y-2.5">
               {m.sender === "user" ? (
                 /* User Message */
                 <div className="flex justify-end">
-                  <div className="max-w-[82%] rounded-2xl rounded-tr-xs bg-[var(--primary)] px-4 py-3 text-sm text-white shadow-xs leading-relaxed">
+                  <div className="max-w-[90%] sm:max-w-[80%] rounded-2xl rounded-tr-xs bg-[var(--primary)] px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white shadow-2xs leading-relaxed break-words">
                     {m.text}
                   </div>
                 </div>
               ) : (
                 /* Coach Message */
-                <div className="flex items-start gap-3 max-w-[96%]">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)] mt-1 shadow-2xs">
-                    <Bot size={18} />
+                <div className="flex items-start gap-2.5 sm:gap-3 max-w-[100%] sm:max-w-[95%]">
+                  <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)] mt-0.5 shadow-2xs">
+                    <Bot size={15} />
                   </div>
-                  <div className="min-w-0 flex-1 space-y-3.5">
-                    {/* Main text container */}
-                    <div className="rounded-2xl rounded-tl-xs border border-[#d7e8cb] bg-[#f4f8f2] p-4 text-sm text-[var(--ink)] leading-relaxed shadow-2xs relative group">
+                  <div className="min-w-0 flex-1 space-y-2.5">
+                    {/* Main text bubble */}
+                    <div className="rounded-2xl rounded-tl-xs border border-[#d7e8cb] bg-[#f4f8f2] p-3 sm:p-4 text-xs sm:text-sm text-[var(--ink)] leading-relaxed shadow-2xs relative group">
                       {/* Text-to-speech button */}
                       <button
                         type="button"
                         onClick={() => handleToggleSpeech(m.id, m.text)}
                         title={speakingId === m.id ? "Okumayı Durdur" : "Sesli Dinle"}
-                        className="absolute right-2.5 top-2.5 p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/80 transition-colors"
+                        className="absolute right-2 top-2 p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--primary)] hover:bg-white/80 transition-colors touch-manipulation"
                       >
                         {speakingId === m.id ? (
-                          <VolumeX size={16} className="text-red-600 animate-pulse" />
+                          <VolumeX size={15} className="text-red-600 animate-pulse" />
                         ) : (
-                          <Volume2 size={16} />
+                          <Volume2 size={15} />
                         )}
                       </button>
 
-                      <div className="whitespace-pre-line pr-6">{m.text}</div>
+                      <div className="whitespace-pre-line pr-6 break-words">{m.text}</div>
                     </div>
 
-                    {/* Insight & Action Cards */}
+                    {/* Action Cards (if generated by AI) */}
                     {m.cards && m.cards.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {m.cards.map((c, i) => {
                           const cardKey = `${m.id}-${i}`;
                           const isAdded = !!addedCards[cardKey];
                           return (
                             <div
                               key={i}
-                              className="rounded-xl border border-[var(--outline)] bg-white p-4 flex flex-col justify-between hover:border-[var(--primary)] transition-all shadow-2xs"
+                              className="rounded-xl border border-[var(--outline)] bg-white p-3 sm:p-3.5 flex flex-col justify-between hover:border-[var(--primary)] transition-all shadow-2xs"
                             >
                               <div>
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h4 className="font-display text-sm font-semibold text-[var(--ink)] flex items-center gap-1.5">
+                                <div className="flex items-start justify-between gap-2 mb-1.5">
+                                  <h4 className="font-display text-xs sm:text-sm font-semibold text-[var(--ink)] flex items-center gap-1.5 truncate">
                                     {c.iconType === "timer" ? (
-                                      <Timer size={16} className="text-[var(--primary)]" />
+                                      <Timer size={14} className="text-[var(--primary)] shrink-0" />
                                     ) : (
-                                      <Layers size={16} className="text-[var(--primary)]" />
+                                      <Layers size={14} className="text-[var(--primary)] shrink-0" />
                                     )}
-                                    {c.title}
+                                    <span className="truncate">{c.title}</span>
                                   </h4>
                                   <span
-                                    className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                    className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0 ${
                                       c.priority === "Öncelikli"
                                         ? "bg-[#ffdad6]/70 text-[#93000a]"
                                         : "bg-[var(--surface-muted)] text-[var(--muted)]"
@@ -461,17 +450,16 @@ export function CoachPage() {
                                     {c.priority}
                                   </span>
                                 </div>
-                                <p className="text-xs text-[var(--muted)] leading-relaxed">
+                                <p className="text-[11px] text-[var(--muted)] leading-relaxed line-clamp-3">
                                   {c.description}
                                 </p>
                               </div>
 
-                              <div className="mt-4 pt-3 border-t border-dashed border-[var(--outline)] flex items-center justify-between gap-2">
-                                {/* Quick Add to Plan Button */}
+                              <div className="mt-3 pt-2 border-t border-dashed border-[var(--outline)] flex items-center justify-between gap-2 text-xs">
                                 <button
                                   type="button"
                                   onClick={() => handleAddCardToToday(cardKey, c)}
-                                  className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg transition-all ${
+                                  className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg transition-all touch-manipulation ${
                                     isAdded
                                       ? "bg-emerald-100 text-emerald-800"
                                       : "bg-[var(--surface-ai)] text-[var(--primary)] hover:bg-[#d7e8cb]"
@@ -479,12 +467,12 @@ export function CoachPage() {
                                 >
                                   {isAdded ? (
                                     <>
-                                      <Check size={12} strokeWidth={3} />
+                                      <Check size={11} strokeWidth={3} />
                                       <span>Plana Eklendi</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Plus size={12} />
+                                      <Plus size={11} />
                                       <span>Bugüne Ekle</span>
                                     </>
                                   )}
@@ -492,10 +480,10 @@ export function CoachPage() {
 
                                 <Link
                                   href={c.actionHref}
-                                  className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:underline ml-auto"
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--primary)] hover:underline ml-auto"
                                 >
                                   <span>{c.actionText}</span>
-                                  <ArrowRight size={13} />
+                                  <ArrowRight size={12} />
                                 </Link>
                               </div>
                             </div>
@@ -504,7 +492,7 @@ export function CoachPage() {
                       </div>
                     )}
 
-                    {/* Accordion: Why did I make this inference? */}
+                    {/* Accordion Reasoning */}
                     {m.explanation && (
                       <div className="rounded-xl border border-[var(--outline)] bg-[#fbf9f5] overflow-hidden text-xs">
                         <button
@@ -512,22 +500,22 @@ export function CoachPage() {
                           onClick={() =>
                             setExpandedReason(expandedReason === m.id ? null : m.id)
                           }
-                          className="w-full flex items-center justify-between p-3 text-left font-medium text-[var(--muted)] hover:text-[var(--ink)]"
+                          className="w-full flex items-center justify-between p-2.5 sm:p-3 text-left font-medium text-[var(--muted)] hover:text-[var(--ink)] touch-manipulation"
                         >
-                          <span className="flex items-center gap-1.5">
-                            <Lightbulb size={15} className="text-[var(--primary)]" />
-                            <span>{m.explanation.summary || "Neden bu çıkarımı yaptım?"}</span>
+                          <span className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+                            <Lightbulb size={14} className="text-[var(--primary)] shrink-0" />
+                            <span>{m.explanation.summary || "Koçluk Gerekçesi"}</span>
                           </span>
                           <ChevronDown
-                            size={16}
+                            size={14}
                             className={`transition-transform duration-200 ${
                               expandedReason === m.id ? "rotate-180" : ""
                             }`}
                           />
                         </button>
                         {expandedReason === m.id && (
-                          <div className="p-3 border-t border-[var(--outline)] bg-white text-[var(--muted)] space-y-1.5">
-                            <ul className="list-disc list-inside space-y-1 pl-1">
+                          <div className="p-3 border-t border-[var(--outline)] bg-white text-[var(--muted)] text-[11px] sm:text-xs space-y-1">
+                            <ul className="list-disc list-inside space-y-1">
                               {m.explanation.points.map((pt, idx) => (
                                 <li key={idx} className="leading-relaxed">
                                   {pt}
@@ -545,21 +533,24 @@ export function CoachPage() {
           ))}
 
           {loading && (
-            <div className="flex items-center gap-3 text-xs text-[var(--muted)] py-3 px-2 animate-in fade-in">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-ai)] text-[var(--primary)] animate-spin">
-                <Sparkles size={16} />
+            <div className="flex items-center gap-2.5 text-xs text-[var(--muted)] py-2 px-1 animate-in fade-in">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--surface-ai)] text-[var(--primary)] animate-spin">
+                <Sparkles size={14} />
               </div>
-              <span>AI Koç DeepSeek ile verilerini analiz ediyor ve yanıt hazırlıyor...</span>
+              <span>AI Koç verilerini analiz ediyor ve yanıt hazırlıyor...</span>
             </div>
           )}
+
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Dynamic Quick Prompt Suggestions */}
-        <div className="mt-4 pt-3 border-t border-[var(--outline)]">
+        {/* 4. Bottom Prompts & Input Area */}
+        <div className="mt-2.5 pt-2.5 border-t border-[var(--outline)] shrink-0">
+          {/* Quick Prompts Carousel */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-xs">
-            <span className="text-[11px] font-semibold text-[var(--muted)] shrink-0 mr-1 flex items-center gap-1">
-              <Sparkles size={12} className="text-[var(--primary)]" />
-              Önerilen Sorular:
+            <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--muted)] shrink-0 mr-0.5 flex items-center gap-1">
+              <Sparkles size={11} className="text-[var(--primary)]" />
+              Öneriler:
             </span>
             {activeModeData.quickPrompts.map((prompt) => (
               <button
@@ -567,20 +558,20 @@ export function CoachPage() {
                 type="button"
                 onClick={() => handleSend(prompt)}
                 disabled={loading}
-                className="shrink-0 rounded-full border border-[var(--outline)] bg-[#fbf9f5] px-3 py-1 text-xs text-[var(--muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--surface-ai)] transition-all disabled:opacity-50"
+                className="shrink-0 rounded-full border border-[var(--outline)] bg-[#fbf9f5] px-2.5 py-1 text-[11px] text-[var(--muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--surface-ai)] transition-all disabled:opacity-50 touch-manipulation"
               >
                 {prompt}
               </button>
             ))}
           </div>
 
-          {/* Chat Input Form */}
+          {/* Form Input */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSend();
             }}
-            className="mt-2"
+            className="mt-1"
           >
             <div className="relative flex items-center">
               <input
@@ -589,26 +580,26 @@ export function CoachPage() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
                   mode === "tutor"
-                    ? "Merak ettiğin formülü veya konuyu sor (örn: Türev alma kuralları)..."
+                    ? "Merak ettiğin formülü veya konuyu sor..."
                     : mode === "motivation"
                     ? "Nasıl hissettiğini veya kaygını yaz..."
                     : mode === "planner"
-                    ? "Bugünkü zamanını belirt (örn: 3 saatim var ne yapmalıyım)..."
+                    ? "Zamanını belirt (örn: 3 saatim var)..."
                     : "Koçuna sınav stratejisi veya taktik sor..."
                 }
-                className="w-full rounded-full border border-[var(--outline)] bg-[#fbf9f5] py-3 pl-4 pr-12 text-sm text-[var(--ink)] outline-none focus:border-[var(--primary)] focus:bg-white transition-all placeholder:text-[var(--muted)]"
+                className="w-full rounded-full border border-[var(--outline)] bg-[#fbf9f5] py-2.5 sm:py-3 pl-3.5 sm:pl-4 pr-11 sm:pr-12 text-xs sm:text-sm text-[var(--ink)] outline-none focus:border-[var(--primary)] focus:bg-white transition-all placeholder:text-[var(--muted)] min-h-[44px]"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
                 aria-label="Soruyu gönder"
-                className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-xs hover:bg-[var(--primary-strong)] active:scale-95 disabled:opacity-40 transition-all"
+                className="absolute right-1 sm:right-1.5 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-2xs hover:bg-[var(--primary-strong)] active:scale-95 disabled:opacity-40 transition-all touch-manipulation"
               >
-                <Send size={16} />
+                <Send size={14} className="sm:size-4" />
               </button>
             </div>
-            <p className="mt-2 text-center text-[10px] text-[var(--muted)]">
-              AI Koç DeepSeek V3 altyapısını kullanır. ÖSYM/MEB müfredatına ve kişisel verilerine göre eğitilmiştir.
+            <p className="mt-1.5 text-center text-[9px] sm:text-[10px] text-[var(--muted)]">
+              ÖSYM/MEB müfredatına ve kişisel verilerine göre özelleştirilmiştir.
             </p>
           </form>
         </div>

@@ -27,14 +27,14 @@ export function CookieBanner() {
   const handleAccept = () => {
     try {
       localStorage.setItem("yks_cookie_consent", "accepted");
-    } catch (err) {}
+    } catch {}
     setShow(false);
   };
 
   const handleDecline = () => {
     try {
       localStorage.setItem("yks_cookie_consent", "declined");
-    } catch (err) {}
+    } catch {}
     setShow(false);
   };
 

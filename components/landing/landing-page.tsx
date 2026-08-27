@@ -1,27 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  Award,
   BarChart3,
   BookOpen,
-  CalendarDays,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Flame,
   ListTodo,
   Menu,
-  Shield,
   Sparkles,
   Target,
-  Timer,
   TrendingUp,
   X,
   Zap,
 } from "lucide-react";
 import { appConfig } from "@/lib/config";
+
+function ScrollReveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        transitionDuration: "700ms",
+        transitionDelay: `${delay}ms`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+      className={`transition-all ${
+        isVisible
+          ? "opacity-100 translate-y-0 scale-100 filter-none"
+          : "opacity-0 translate-y-8 scale-[0.98] blur-[2px]"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+const rotatingWords = [
+  "Yapay Zeka",
+  "Akıllı Planlama",
+  "Net Analizi",
+  "Kişisel Koçluk",
+];
 
 const faqs = [
   {
@@ -51,9 +103,30 @@ const faqs = [
   },
 ];
 
+const stats = [
+  { value: "140+", label: "MEB / ÖSYM Konusu", icon: BookOpen },
+  { value: "12", label: "TYT & AYT Dersi", icon: Target },
+  { value: "7/24", label: "Yapay Zeka Koçu", icon: Sparkles },
+  { value: "%100", label: "Ücretsiz & Reklamsız", icon: Zap },
+];
+
 export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [wordIndex, setWordIndex] = useState(0);
+  const [fadeAnim, setFadeAnim] = useState(true);
+
+  // Rotating word interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFadeAnim(false);
+      setTimeout(() => {
+        setWordIndex((prev) => (prev + 1) % rotatingWords.length);
+        setFadeAnim(true);
+      }, 250);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -162,24 +235,34 @@ export function LandingPage() {
 
       {/* 2. Hero Section */}
       <section className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24 md:pt-20 md:pb-28">
+        {/* Soft Animated Ambient Aura */}
         <div className="absolute inset-0 pointer-events-none -z-10 flex items-center justify-center">
-          <div className="h-[350px] w-[500px] sm:h-[450px] sm:w-[650px] rounded-full bg-[var(--surface-ai)]/70 blur-3xl" />
+          <div className="h-[350px] w-[500px] sm:h-[480px] sm:w-[700px] rounded-full bg-[var(--surface-ai)]/75 blur-3xl animate-pulse-glow" />
         </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#d7e8cb] bg-[var(--surface-ai)] px-3 py-1 text-[11px] sm:text-xs font-semibold text-[var(--primary)] shadow-2xs mb-5 sm:mb-6 animate-in fade-in">
-              <Sparkles size={13} />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d7e8cb] bg-[var(--surface-ai)] px-3.5 py-1 text-[11px] sm:text-xs font-semibold text-[var(--primary)] shadow-2xs mb-5 sm:mb-6 animate-float">
+              <Sparkles size={13} className="text-[var(--primary)]" />
               <span>2025 & 2026 ÖSYM Müfredatı ile %100 Uyumlu</span>
             </div>
 
-            {/* Main Headline */}
+            {/* Main Headline with Rotating Word Animation */}
             <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--ink)] leading-[1.18] sm:leading-[1.15]">
               YKS Hazırlığında{" "}
-              <span className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4">
-                Yapay Zeka
-              </span>{" "}
+              <span className="inline-block min-w-[190px] sm:min-w-[310px] text-center sm:text-left">
+                <span
+                  className={`inline-block text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-all duration-300 transform ${
+                    fadeAnim
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 -translate-y-2"
+                  }`}
+                >
+                  {rotatingWords[wordIndex]}
+                </span>
+              </span>
+              <br className="hidden sm:inline" />
               ile Zamanı ve Netlerini Yönet
             </h1>
 
@@ -193,14 +276,14 @@ export function LandingPage() {
             <div className="mt-7 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto sm:max-w-none">
               <Link
                 href="/today"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-[var(--primary-strong)] active:scale-95 hover:shadow-lg hover:-translate-y-0.5 transition-all touch-manipulation relative overflow-hidden group"
               >
-                <span>Hemen Ücretsiz Başla</span>
-                <ChevronRight size={18} />
+                <span className="relative z-10">Hemen Ücretsiz Başla</span>
+                <ChevronRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/login"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--ink)] shadow-xs hover:bg-[var(--surface-muted)] active:scale-95 transition-all touch-manipulation"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--outline)] bg-white px-7 py-3.5 text-sm font-semibold text-[var(--ink)] shadow-xs hover:bg-[var(--surface-muted)] hover:border-[var(--primary)] active:scale-95 transition-all touch-manipulation"
               >
                 <span>Mevcut Hesaba Giriş</span>
               </Link>
@@ -208,82 +291,100 @@ export function LandingPage() {
 
             {/* Trust Badges */}
             <div className="mt-7 sm:mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-[var(--muted)]">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 hover:text-[var(--ink)] transition-colors">
                 <CheckCircle2 size={15} className="text-[var(--primary)]" />
                 <span>Kredi Kartı Gerekmez</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 hover:text-[var(--ink)] transition-colors">
                 <CheckCircle2 size={15} className="text-[var(--primary)]" />
                 <span>PWA Mobil Uygulama</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 hover:text-[var(--ink)] transition-colors">
                 <CheckCircle2 size={15} className="text-[var(--primary)]" />
                 <span>ÖSYM Müfredat Güvencesi</span>
               </div>
             </div>
           </div>
 
-          {/* Interactive UI Mockup Showcase */}
-          <div className="mt-10 sm:mt-14 max-w-4xl mx-auto rounded-2xl border border-[var(--outline)] bg-white p-3.5 sm:p-6 shadow-xl relative">
-            <div className="flex items-center justify-between border-b border-[var(--outline)] pb-3.5 mb-4">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-red-400" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-amber-400" />
-                <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-400" />
-                <span className="ml-2 text-xs font-semibold text-[var(--muted)] truncate max-w-[200px] sm:max-w-none">
-                  YKS Odak — Günlük Çalışma Alanı
+          {/* Clean & Minimalist Bento UI Showcase */}
+          <div className="mt-10 sm:mt-14 max-w-4xl mx-auto rounded-2xl border border-[var(--outline)] bg-white p-4 sm:p-6 shadow-lg relative transition-all hover:shadow-xl">
+            {/* Window Top Header */}
+            <div className="flex items-center justify-between border-b border-[var(--outline)] pb-3.5 mb-5">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                </div>
+                <span className="text-xs font-semibold text-[var(--muted)] ml-1.5">
+                  {appConfig.name} — Günlük Çalışma Alanı
                 </span>
               </div>
-              <span className="text-[11px] sm:text-xs font-semibold text-[var(--primary)] bg-[var(--surface-ai)] px-2.5 py-0.5 rounded-full border border-[#d7e8cb]">
-                Canlı Önizleme
-              </span>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--muted)] font-medium">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span>Canlı Çalışma Durumu</span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3.5 sm:gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* Card 1: Today Plan */}
-              <div className="rounded-xl border border-[var(--outline)] bg-[#fbf9f5] p-3.5 sm:p-4">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-bold text-[var(--ink)]">Bugünkü Plan</span>
-                  <span className="rounded bg-[var(--primary)] text-white text-[10px] px-2 py-0.5 font-bold">
-                    %75 Bitti
-                  </span>
+              <div className="paper-card p-4 sm:p-5 flex flex-col justify-between bg-[#fbf9f5] hover-lift">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-[var(--ink)] flex items-center gap-1.5">
+                      <ListTodo size={15} className="text-[var(--primary)]" />
+                      <span>Bugünkü Plan</span>
+                    </span>
+                    <span className="rounded bg-[var(--primary)] text-white text-[10px] px-2 py-0.5 font-bold">
+                      %67 Tamamlandı
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2 rounded-lg p-2 bg-white/80 border border-[var(--outline)] text-[var(--muted)]">
+                      <CheckCircle2 size={15} className="text-[var(--primary)] shrink-0" />
+                      <span className="line-through">Türkçe: 30 Paragraf Sorusu</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg p-2 bg-white/80 border border-[var(--outline)] text-[var(--muted)]">
+                      <CheckCircle2 size={15} className="text-[var(--primary)] shrink-0" />
+                      <span className="line-through">Matematik: Fonksiyonlar</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg p-2 bg-white border-l-4 border-l-[var(--primary)] border-[var(--outline)] font-semibold shadow-2xs text-[var(--ink)]">
+                      <div className="h-3.5 w-3.5 rounded-full border-2 border-[var(--primary)] shrink-0" />
+                      <span>Fizik: Vektörler & Bağıl</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2 rounded-lg bg-white p-2 border border-[var(--outline)] text-[var(--ink)]">
-                    <CheckCircle2 size={14} className="text-[var(--primary)] shrink-0" />
-                    <span className="line-through text-[var(--muted)] truncate">Matematik: Fonksiyonlar</span>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-lg bg-white p-2 border border-[var(--outline)] text-[var(--ink)]">
-                    <CheckCircle2 size={14} className="text-[var(--primary)] shrink-0" />
-                    <span className="line-through text-[var(--muted)] truncate">Fizik: Vektörler</span>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-lg bg-white p-2 border border-l-4 border-l-[var(--primary)] border-[var(--outline)] text-[var(--ink)] font-semibold">
-                    <div className="h-3.5 w-3.5 rounded-full border-2 border-[var(--primary)] shrink-0" />
-                    <span className="truncate">Türkçe: Paragraf (30 Soru)</span>
-                  </div>
+
+                <div className="mt-4 pt-2.5 border-t border-[var(--outline)] flex items-center justify-between text-[11px] text-[var(--muted)]">
+                  <span>Kalan Hedef</span>
+                  <span className="font-semibold text-[var(--ink)]">1 Görev (45 Dk)</span>
                 </div>
               </div>
 
               {/* Card 2: AI Coach */}
-              <div className="rounded-xl border border-[#d7e8cb] bg-[#E9EEE6] p-3.5 sm:p-4 flex flex-col justify-between">
+              <div className="rounded-xl border border-[#d7e8cb] bg-[#E9EEE6] p-4 sm:p-5 flex flex-col justify-between hover-lift">
                 <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#4E5D47] mb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#4E5D47] mb-2.5">
                     <Sparkles size={16} className="text-[var(--primary)] shrink-0" />
                     <span>AI Koç Tavsiyesi</span>
                   </div>
                   <p className="text-xs text-[#4E5D47] leading-relaxed">
-                    &quot;Son 3 denemede AYT Matematik netlerin %18 arttı. Bu hafta Türev fasikülünü
-                    bitirirsen hedefindeki net dilimine rahatça ulaşacaksın.&quot;
+                    &quot;Son 3 denemede AYT Matematik netlerin %18 arttı. Bu hafta planlanan konuları
+                    tamamlarsan hedefindeki net dilimine rahatça ulaşacaksın.&quot;
                   </p>
                 </div>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-[#4E5D47] font-semibold pt-2 border-t border-[#d7e8cb]">
+
+                <div className="mt-4 pt-2.5 border-t border-[#d7e8cb] flex items-center justify-between text-[11px] text-[#4E5D47] font-semibold">
                   <span className="truncate">Hedef: ODTÜ Bilgisayar</span>
-                  <span className="shrink-0">🔥 14 Gün Seri</span>
+                  <span className="shrink-0 flex items-center gap-1">
+                    <Flame size={13} className="text-[#ba1a1a]" /> 15 Gün Seri
+                  </span>
                 </div>
               </div>
 
               {/* Card 3: Exam Analytics */}
-              <div className="rounded-xl border border-[var(--outline)] bg-white p-3.5 sm:p-4 flex flex-col justify-between">
+              <div className="paper-card p-4 sm:p-5 flex flex-col justify-between bg-white hover-lift">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-[var(--ink)]">Son TYT Denemesi</span>
@@ -296,11 +397,12 @@ export function LandingPage() {
                     ↑ Önceki denemeye göre +4.25 Net
                   </p>
                 </div>
-                <div className="mt-3 pt-2 border-t border-[var(--outline)] flex justify-between text-[11px] text-[var(--muted)]">
-                  <span>Tr: 34.50</span>
+
+                <div className="mt-4 pt-2.5 border-t border-[var(--outline)] flex justify-between text-[11px] text-[var(--muted)]">
+                  <span>Tr: 34.5</span>
                   <span>Mat: 31.25</span>
-                  <span>Fen: 18.00</span>
-                  <span>Sos: 15.00</span>
+                  <span>Fen: 18.0</span>
+                  <span>Sos: 15.0</span>
                 </div>
               </div>
             </div>
@@ -308,216 +410,273 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Core Features Section */}
-      <section id="features" className="py-14 sm:py-20 md:py-24 border-t border-[var(--outline)] bg-white">
+      {/* 3. Live Statistics Grid Section */}
+      <section id="stats" className="py-10 sm:py-14 border-y border-[var(--outline)] bg-white overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-3 py-1 rounded-full border border-[#d7e8cb]">
-              Tüm İhtiyaçların Tek Yerde
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] mt-3">
-              YKS Maratonunu Şansa Bırakmayın
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm md:text-base text-[var(--muted)]">
-              Rastgele ders çalışmayı bırakın. Veriye dayalı planlama ve yapay zeka rehberliği ile
-              zamanınızı en yüksek net artışını getirecek konulara harcayın.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Feature 1: AI Coach */}
-            <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover:border-[var(--primary)] transition-all">
-              <div>
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)] mb-4">
-                  <Sparkles size={22} />
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">AI Koçum</h3>
-                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                  Çalışma durumunuza ve deneme analizlerinize göre size özel strateji üreten 7/24
-                  yapay zeka rehberi.
-                </p>
-              </div>
-              <Link
-                href="/coach"
-                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline"
-              >
-                Koçla Konuş →
-              </Link>
-            </div>
-
-            {/* Feature 2: Smart Daily Planner */}
-            <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover:border-[var(--primary)] transition-all">
-              <div>
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#fff5f4] text-[#ba1a1a] mb-4">
-                  <ListTodo size={22} />
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Akıllı Planlayıcı</h3>
-                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                  Eksik konularınıza ve haftalık hedeflerinize göre her güne özel soru ve konu çalışma
-                  çizelgesi.
-                </p>
-              </div>
-              <Link
-                href="/planner"
-                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline"
-              >
-                Planı İncele →
-              </Link>
-            </div>
-
-            {/* Feature 3: ÖSYM Topic Tracking */}
-            <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover:border-[var(--primary)] transition-all">
-              <div>
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#E9EEE6] text-[#4E5D47] mb-4">
-                  <BookOpen size={22} />
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">ÖSYM Konu Takibi</h3>
-                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                  Sayısal, EA, Sözel ve Dil derslerinin tüm konuları, soru ağırlıkları ve tamamlanma
-                  yüzdeleri.
-                </p>
-              </div>
-              <Link
-                href="/subjects"
-                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline"
-              >
-                Müfredatı Gör →
-              </Link>
-            </div>
-
-            {/* Feature 4: Exam Analytics */}
-            <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover:border-[var(--primary)] transition-all">
-              <div>
-                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#f4f7fa] text-[#1c3d5a] mb-4">
-                  <BarChart3 size={22} />
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Deneme Analitiği</h3>
-                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                  Çözdüğünüz tüm genel ve branş denemelerinin ders bazında net artış ve gelişim
-                  grafikleri.
-                </p>
-              </div>
-              <Link
-                href="/analytics"
-                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline"
-              >
-                Raporları Gör →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. How It Works Section */}
-      <section id="how-it-works" className="py-14 sm:py-20 md:py-24 border-t border-[var(--outline)] bg-[var(--background)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)]">
-              3 Adımda Hedeflediğin Üniversiteye Ulaş
-            </h2>
-            <p className="mt-3 text-xs sm:text-sm md:text-base text-[var(--muted)]">
-              YKS sürecinde karmaşık defterlere veya excel tablolarına ihtiyacınız yok.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
-            <div className="paper-card p-5 sm:p-6 text-center">
-              <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg">
-                1
-              </div>
-              <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Hedefini Belirle</h3>
-              <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                İstediğin bölümü, üniversiteyi ve alanını (SAY/EA/SÖZ/DİL) seçerek profilini oluştur.
-              </p>
-            </div>
-
-            <div className="paper-card p-5 sm:p-6 text-center">
-              <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg">
-                2
-              </div>
-              <h3 className="font-display text-lg font-bold text-[var(--ink)]">AI Planını Takip Et</h3>
-              <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                Yapay zeka eksik konularına ve kalan gün sayısına göre her sabah sana özel bir plan
-                çıkarsın.
-              </p>
-            </div>
-
-            <div className="paper-card p-5 sm:p-6 text-center">
-              <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg">
-                3
-              </div>
-              <h3 className="font-display text-lg font-bold text-[var(--ink)]">Netlerini Katla</h3>
-              <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
-                Denemelerini kaydet, zayıf olduğun konuları tespit et ve sınav gününe en yüksek
-                özgüvenle gir.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. FAQ Section */}
-      <section id="faq" className="py-14 sm:py-20 md:py-24 border-t border-[var(--outline)] bg-white">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-3 py-1 rounded-full border border-[#d7e8cb]">
-              Merak Edilenler
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] mt-3">
-              Sıkça Sorulan Sorular
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaq === index;
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
               return (
-                <div
-                  key={faq.question}
-                  className="rounded-xl border border-[var(--outline)] bg-[#fbf9f5] overflow-hidden transition-all"
-                >
-                  <button
-                    onClick={() => toggleFaq(index)}
-                    className="flex w-full items-center justify-between p-4 sm:p-4.5 text-left font-display text-xs sm:text-sm font-semibold text-[var(--ink)] hover:text-[var(--primary)] transition-colors min-h-[48px] touch-manipulation"
-                  >
-                    <span className="pr-4">{faq.question}</span>
-                    <ChevronDown
-                      size={18}
-                      className={`text-[var(--muted)] shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-[var(--primary)]" : ""
-                      }`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="px-4 pb-4 pt-1 text-xs leading-relaxed text-[var(--muted)] border-t border-[var(--outline)]/50 bg-white">
-                      {faq.answer}
+                <ScrollReveal key={stat.label} delay={index * 100}>
+                  <div className="paper-card p-4 sm:p-6 text-center hover-lift flex flex-col items-center justify-center bg-[#fbf9f5] h-full">
+                    <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)]">
+                      <Icon size={18} />
                     </div>
-                  )}
-                </div>
+                    <div className="font-display text-2xl sm:text-3xl font-extrabold text-[var(--ink)]">
+                      {stat.value}
+                    </div>
+                    <div className="text-xs sm:text-sm text-[var(--muted)] font-medium mt-0.5">
+                      {stat.label}
+                    </div>
+                  </div>
+                </ScrollReveal>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* 6. Big CTA Banner */}
+      {/* 4. Core Features Section */}
+      <section id="features" className="py-14 sm:py-20 md:py-24 bg-[var(--background)] overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-3 py-1 rounded-full border border-[#d7e8cb]">
+                Tüm İhtiyaçların Tek Yerde
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] mt-3">
+                YKS Maratonunu Şansa Bırakmayın
+              </h2>
+              <p className="mt-3 text-xs sm:text-sm md:text-base text-[var(--muted)]">
+                Rastgele ders çalışmayı bırakın. Veriye dayalı planlama ve yapay zeka rehberliği ile
+                zamanınızı en yüksek net artışını getirecek konulara harcayın.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Feature 1: AI Coach */}
+            <ScrollReveal delay={100}>
+              <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover-lift bg-white h-full">
+                <div>
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)] mb-4">
+                    <Sparkles size={22} />
+                  </div>
+                  <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">AI Koçum</h3>
+                  <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                    Çalışma durumunuza ve deneme analizlerinize göre size özel strateji üreten 7/24
+                    yapay zeka rehberi.
+                  </p>
+                </div>
+                <Link
+                  href="/coach"
+                  className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline group"
+                >
+                  <span>Koçla Konuş</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </ScrollReveal>
+
+            {/* Feature 2: Smart Daily Planner */}
+            <ScrollReveal delay={200}>
+              <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover-lift bg-white h-full">
+                <div>
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#fff5f4] text-[#ba1a1a] mb-4">
+                    <ListTodo size={22} />
+                  </div>
+                  <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Akıllı Planlayıcı</h3>
+                  <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                    Eksik konularınıza ve haftalık hedeflerinize göre her güne özel soru ve konu çalışma
+                    çizelgesi.
+                  </p>
+                </div>
+                <Link
+                  href="/planner"
+                  className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline group"
+                >
+                  <span>Planı İncele</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </ScrollReveal>
+
+            {/* Feature 3: ÖSYM Topic Tracking */}
+            <ScrollReveal delay={300}>
+              <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover-lift bg-white h-full">
+                <div>
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#E9EEE6] text-[#4E5D47] mb-4">
+                    <BookOpen size={22} />
+                  </div>
+                  <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">ÖSYM Konu Takibi</h3>
+                  <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                    Sayısal, EA, Sözel ve Dil derslerinin tüm konuları, soru ağırlıkları ve tamamlanma
+                    yüzdeleri.
+                  </p>
+                </div>
+                <Link
+                  href="/subjects"
+                  className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline group"
+                >
+                  <span>Müfredatı Gör</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </ScrollReveal>
+
+            {/* Feature 4: Exam Analytics */}
+            <ScrollReveal delay={400}>
+              <div className="paper-card p-5 sm:p-6 flex flex-col justify-between hover-lift bg-white h-full">
+                <div>
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-[#f4f7fa] text-[#1c3d5a] mb-4">
+                    <BarChart3 size={22} />
+                  </div>
+                  <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Deneme Analitiği</h3>
+                  <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                    Çözdüğünüz tüm genel ve branş denemelerinin ders bazında net artış ve gelişim
+                    grafikleri.
+                  </p>
+                </div>
+                <Link
+                  href="/analytics"
+                  className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[var(--primary)] hover:underline group"
+                >
+                  <span>Raporları Gör</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. How It Works Section */}
+      <section id="how-it-works" className="py-14 sm:py-20 md:py-24 border-t border-[var(--outline)] bg-white overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)]">
+                3 Adımda Hedeflediğin Üniversiteye Ulaş
+              </h2>
+              <p className="mt-3 text-xs sm:text-sm md:text-base text-[var(--muted)]">
+                YKS sürecinde karmaşık defterlere veya excel tablolarına ihtiyacınız yok.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
+            <ScrollReveal delay={100}>
+              <div className="paper-card p-5 sm:p-6 text-center hover-lift bg-[#fbf9f5] h-full">
+                <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg shadow-sm">
+                  1
+                </div>
+                <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">Hedefini Belirle</h3>
+                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                  İstediğin bölümü, üniversiteyi ve alanını (SAY/EA/SÖZ/DİL) seçerek profilini oluştur.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={250}>
+              <div className="paper-card p-5 sm:p-6 text-center hover-lift bg-[#fbf9f5] h-full">
+                <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg shadow-sm">
+                  2
+                </div>
+                <h3 className="font-display text-lg font-bold text-[var(--ink)]">AI Planını Takip Et</h3>
+                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                  Yapay zeka eksik konularına ve kalan gün sayısına göre her sabah sana özel bir plan
+                  çıkarsın.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={400}>
+              <div className="paper-card p-5 sm:p-6 text-center hover-lift bg-[#fbf9f5] h-full">
+                <div className="mx-auto mb-4 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white font-display font-bold text-base sm:text-lg shadow-sm">
+                  3
+                </div>
+                <h3 className="font-display text-lg font-bold text-[var(--ink)]">Netlerini Katla</h3>
+                <p className="mt-2 text-xs text-[var(--muted)] leading-relaxed">
+                  Denemelerini kaydet, zayıf olduğun konuları tespit et ve sınav gününe en yüksek
+                  özgüvenle gir.
+                </p>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. FAQ Section with Animated Accordions */}
+      <section id="faq" className="py-14 sm:py-20 md:py-24 border-t border-[var(--outline)] bg-[var(--background)] overflow-hidden">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)] bg-[var(--surface-ai)] px-3 py-1 rounded-full border border-[#d7e8cb]">
+                Merak Edilenler
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)] mt-3">
+                Sıkça Sorulan Sorular
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <div className="space-y-3">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <ScrollReveal key={faq.question} delay={index * 70}>
+                  <div
+                    className={`rounded-xl border transition-all ${
+                      isOpen
+                        ? "border-[var(--primary)] shadow-sm bg-white"
+                        : "border-[var(--outline)] bg-white hover:border-[var(--outline)]/80"
+                    }`}
+                  >
+                    <button
+                      onClick={() => toggleFaq(index)}
+                      className="flex w-full items-center justify-between p-4 sm:p-4.5 text-left font-display text-xs sm:text-sm font-semibold text-[var(--ink)] hover:text-[var(--primary)] transition-colors min-h-[48px] touch-manipulation cursor-pointer"
+                    >
+                      <span className="pr-4">{faq.question}</span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-[var(--muted)] shrink-0 transition-transform duration-300 ${
+                          isOpen ? "rotate-180 text-[var(--primary)]" : ""
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="px-4 pb-4 pt-1 text-xs leading-relaxed text-[var(--muted)] border-t border-[var(--outline)]/40 animate-in fade-in slide-in-from-top-1 duration-200">
+                        {faq.answer}
+                      </div>
+                    )}
+                  </div>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Big CTA Banner */}
       <section className="py-14 sm:py-16 border-t border-[var(--outline)] bg-[#E9EEE6] relative overflow-hidden">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8 relative z-10">
-          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#4E5D47]">
-            Hedefindeki Üniversite İçin İlk Adımı Bugün At
-          </h2>
-          <p className="mt-3 text-xs sm:text-sm text-[#4E5D47] max-w-xl mx-auto leading-relaxed">
-            Tamamen ücretsiz başla, planını yap ve 2025/2026 YKS maratonunu profesyonelce yönet.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <Link
-              href="/today"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-[var(--primary-strong)] active:scale-95 transition-all touch-manipulation"
-            >
-              <span>Çalışma Alanını Aç</span>
-              <ChevronRight size={18} />
-            </Link>
-          </div>
+          <ScrollReveal>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#4E5D47]">
+              Hedefindeki Üniversite İçin İlk Adımı Bugün At
+            </h2>
+            <p className="mt-3 text-xs sm:text-sm text-[#4E5D47] max-w-xl mx-auto leading-relaxed">
+              Tamamen ücretsiz başla, planını yap ve 2025/2026 YKS maratonunu profesyonelce yönet.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Link
+                href="/today"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary)] px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-[var(--primary-strong)] active:scale-95 hover:shadow-xl hover:-translate-y-0.5 transition-all touch-manipulation group"
+              >
+                <span>Çalışma Alanını Aç</span>
+                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

@@ -46,11 +46,13 @@ export function PlannerPage() {
   const [generatedTasks, setGeneratedTasks] = useState<Array<Omit<DailyTask, "id">>>([]);
   const [aiRationale, setAiRationale] = useState<string>("");
   const [aiTips, setAiTips] = useState<string[]>([]);
+  const [aiError, setAiError] = useState<string>("");
   const [loadingStep, setLoadingStep] = useState<number>(1);
   const [approving, setApproving] = useState<boolean>(false);
 
   const startGeneration = async () => {
     setStep("loading");
+    setAiError("");
     setLoadingStep(1);
 
     const stepTimer1 = setTimeout(() => setLoadingStep(2), 600);
@@ -125,56 +127,10 @@ export function PlannerPage() {
         return;
       }
       throw new Error("Boş görev listesi");
-    } catch (err) {
-      console.warn("DeepSeek planner fallback devreye girdi:", err);
-      // Intelligent fallback using real curriculum topics
-      const mathMins = Math.round(hours * 35);
-      const secondMins = Math.round(hours * 25);
-      const reviewMins = Math.max(30, Math.round(hours * 15));
-
-      const tytMath = uncompletedTopics.find((t) => t.includes("Matematik") || t.includes("Denklem")) || uncompletedTopics[0] || "Temel Matematik";
-      const scienceTopic = uncompletedTopics.find((t) => t.includes("Fizik") || t.includes("Kimya") || t.includes("Biyoloji")) || "Alan Dersi Çalışması";
-      const turkishTopic = uncompletedTopics.find((t) => t.includes("Paragraf") || t.includes("Türkçe")) || "Paragraf Hız Kampı";
-
-      const fallbackPlan: Array<Omit<DailyTask, "id">> = [
-        {
-          subject: focus ? "Öncelikli Odak" : "TYT Matematik",
-          topic: focus || tytMath,
-          description: "Konu özeti çıkarma ve soru bankasından odaklı test çözümü",
-          duration: `${mathMins} dk`,
-          status: "pending",
-          priority: "high",
-          plannedQuestions: Math.round(mathMins * 0.6),
-        },
-        {
-          subject: "Fen & Alan Dersi",
-          topic: scienceTopic,
-          description: "Kavram haritası inceleme ve 2 adet pekiştirme testi",
-          duration: `${secondMins} dk`,
-          status: "pending",
-          priority: "normal",
-          plannedQuestions: Math.round(secondMins * 0.5),
-        },
-        {
-          subject: "TYT Türkçe",
-          topic: turkishTopic,
-          description: "Süre tutarak odaklı soru pratiği",
-          duration: `${reviewMins} dk`,
-          status: "pending",
-          priority: "normal",
-          plannedQuestions: 25,
-        },
-      ];
-
-      setGeneratedTasks(fallbackPlan);
-      setAiRationale(
-        `Müfredattaki eksik konuların ve ${energy === "low" ? "düşük enerjine uygun hafif ritim" : "verimli çalışma hedefin"} gözetilerek bugünkü ${hours} saatlik programın dengelendi.`
-      );
-      setAiTips([
-        "Çalışmaya günün en dinç anında en zorlandığın dersle başla.",
-        "45 dakika çalışma ve 10-15 dakika mola bloklarıyla odaklanma süreni koru.",
-      ]);
-      setStep("result");
+    } catch (error) {
+      console.error("DeepSeek planner request failed:", error);
+      setAiError("AI planı oluşturulamadı. Lütfen bağlantını ve servis durumunu kontrol edip tekrar dene.");
+      setStep("form");
     }
   };
 
@@ -379,6 +335,11 @@ export function PlannerPage() {
               </div>
 
               <div className="flex justify-end pt-3">
+                {aiError && (
+                  <p role="alert" className="mr-auto max-w-md self-center text-xs font-medium text-[var(--danger)]">
+                    {aiError}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={startGeneration}

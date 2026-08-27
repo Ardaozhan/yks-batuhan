@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toaster";
 
 interface MistakeItem {
@@ -44,7 +44,7 @@ export function MistakeTracker() {
     setItems(updated);
     try {
       localStorage.setItem("yks_mistakes", JSON.stringify(updated));
-    } catch (e) {}
+    } catch {}
   };
 
   const handleToggle = (id: string) => {

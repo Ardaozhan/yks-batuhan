@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calendar, Flame, Sparkles } from "lucide-react";
+import { Calendar, Flame } from "lucide-react";
 
 interface DayActivity {
   dateStr: string;
@@ -11,7 +11,7 @@ interface DayActivity {
   level: 0 | 1 | 2 | 3 | 4;
 }
 
-export function StudyHeatmap({ streakDays = 7 }: { streakDays?: number }) {
+export function StudyHeatmap({ streakDays = 0 }: { streakDays?: number } = {}) {
   const [hoveredDay, setHoveredDay] = useState<DayActivity | null>(null);
 
   // Generate 16 weeks (112 days) of activity leading up to today
@@ -25,13 +25,9 @@ export function StudyHeatmap({ streakDays = 7 }: { streakDays?: number }) {
       const dateStr = d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
       const dayName = d.toLocaleDateString("tr-TR", { weekday: "short" });
 
-      let questions = 0;
-      let minutes = 0;
-
-      if (streakDays > 0 && i < streakDays) {
-        questions = Math.floor(40 + ((i * 17) % 50));
-        minutes = Math.floor(60 + ((i * 23) % 90));
-      }
+      // Only record actual questions and minutes, otherwise 0
+      const questions = 0;
+      const minutes = 0;
 
       let level: 0 | 1 | 2 | 3 | 4 = 0;
       if (questions > 90) level = 4;
@@ -42,7 +38,7 @@ export function StudyHeatmap({ streakDays = 7 }: { streakDays?: number }) {
       days.push({ dateStr, dayName, questions, minutes, level });
     }
     return days;
-  }, [streakDays]);
+  }, []);
 
   const totalQuestions = useMemo(
     () => activityData.reduce((sum, d) => sum + d.questions, 0),
@@ -84,6 +80,13 @@ export function StudyHeatmap({ streakDays = 7 }: { streakDays?: number }) {
 
         {/* Quick stats pills */}
         <div className="flex items-center gap-3 text-xs">
+          {streakDays > 0 && (
+            <div className="flex items-center gap-1.5 rounded-lg bg-[var(--surface-muted)] px-2.5 py-1 font-semibold text-[var(--ink)]">
+              <Flame size={14} className="text-[#ba1a1a]" />
+              <span className="text-[var(--primary)]">{streakDays}</span>
+              <span className="text-[var(--muted)]">Gün Seri</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5 rounded-lg bg-[var(--surface-muted)] px-2.5 py-1 font-semibold text-[var(--ink)]">
             <span className="text-[var(--primary)]">{activeDaysCount}</span>
             <span className="text-[var(--muted)]">Aktif Gün</span>

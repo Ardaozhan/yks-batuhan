@@ -11,7 +11,7 @@ import {
   getTodayTasks,
   toggleTaskStatus,
 } from "@/lib/study-store";
-import type { ExamType, TaskPriority } from "@/types/study";
+import type { Exam, ExamType, TaskPriority } from "@/types/study";
 
 type RecordInput = Record<string, unknown>;
 type RecordType = "subject" | "topic" | "task" | "study_session" | "exam" | "mistake";
@@ -311,12 +311,7 @@ export async function createStudyRecord(type: RecordType, input: RecordInput) {
       name: String(input.name),
       type: (input.type as ExamType) || "TYT",
       date: String(input.date || "Bugün"),
-      results: [
-        { section: "Türkçe", correct: 30, wrong: 8, blank: 2 },
-        { section: "Matematik", correct: 20, wrong: 10, blank: 10 },
-        { section: "Sosyal", correct: 15, wrong: 3, blank: 2 },
-        { section: "Fen", correct: 12, wrong: 5, blank: 3 },
-      ],
+      results: Array.isArray(input.results) ? (input.results as Exam["results"]) : [],
     });
   }
 

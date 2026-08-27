@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { Award, Lock, Sparkles } from "lucide-react";
-import { calculateUserBadges, type Badge } from "@/lib/badges";
+import { Award, Lock } from "lucide-react";
+import { calculateUserBadges } from "@/lib/badges";
 
 interface BadgeShowcaseProps {
   stats: {

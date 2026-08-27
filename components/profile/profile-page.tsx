@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Award,
   BookOpen,
   Clock3,
   Edit3,
@@ -11,7 +10,6 @@ import {
   GraduationCap,
   Sparkles,
   Target,
-  Trophy,
   X,
 } from "lucide-react";
 import { defaultProfile } from "@/lib/mock-data";
