@@ -3,16 +3,26 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  Award,
+  BarChart3,
   CheckCircle2,
   ChevronRight,
   Flame,
+  GraduationCap,
   Info,
   RotateCcw,
   Sparkles,
   Target,
+  TrendingUp,
   Zap,
 } from "lucide-react";
-import { calculateYksSimulation, type YksNetInputs } from "@/lib/yks-calculator";
+import {
+  calculateNetLeverage,
+  calculateProgramMatches,
+  calculateYksSimulation,
+  FIELD_PRESETS,
+  type YksNetInputs,
+} from "@/lib/yks-calculator";
 import { getExams, getProfile } from "@/lib/study-store";
 import { defaultProfile } from "@/lib/mock-data";
 import { calculateNet } from "@/lib/analytics";
@@ -24,29 +34,30 @@ export function SimulatorPage() {
   const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [field, setField] = useState<FieldType>("SAY");
 
-  // Net inputs state
+  // Net inputs state (Default starting with realistic mid-high targets)
   const [inputs, setInputs] = useState<YksNetInputs>({
-    tytTurkce: 0,
-    tytSosyal: 0,
-    tytMatematik: 0,
-    tytFen: 0,
-    aytMatematik: 0,
-    aytFizik: 0,
-    aytKimya: 0,
-    aytBiyoloji: 0,
-    aytEdebiyat: 0,
-    aytTarih1: 0,
-    aytCografya1: 0,
-    aytTarih2: 0,
-    aytCografya2: 0,
-    aytFelsefe: 0,
-    aytDin: 0,
-    aytDil: 0,
-    diplomaGrade: 80,
+    tytTurkce: 32,
+    tytSosyal: 14,
+    tytMatematik: 28,
+    tytFen: 14,
+    aytMatematik: 26,
+    aytFizik: 9,
+    aytKimya: 9,
+    aytBiyoloji: 9,
+    aytEdebiyat: 18,
+    aytTarih1: 6,
+    aytCografya1: 4,
+    aytTarih2: 8,
+    aytCografya2: 8,
+    aytFelsefe: 8,
+    aytDin: 5,
+    aytDil: 65,
+    diplomaGrade: 88,
     isBrokenObp: false,
   });
 
   const [hasLoadedLatestExam, setHasLoadedLatestExam] = useState(false);
+  const [programFilter, setProgramFilter] = useState<"all" | "safe" | "target" | "risk">("all");
 
   useEffect(() => {
     let cancelled = false;
@@ -69,59 +80,66 @@ export function SimulatorPage() {
     }));
   };
 
+  // Apply preset
+  const handleApplyPreset = (presetKey: string) => {
+    const fieldPresets = FIELD_PRESETS[field] || FIELD_PRESETS.SAY;
+    const preset = fieldPresets[presetKey];
+    if (preset) {
+      setInputs((prev) => ({
+        ...prev,
+        ...preset,
+      }));
+    }
+  };
+
   // Run calculation
   const results = useMemo(() => {
     return calculateYksSimulation(inputs);
   }, [inputs]);
 
-  // Active ranking according to field
-  const currentRank = useMemo(() => {
-    switch (field) {
-      case "SAY":
-        return results.sayRank;
-      case "EA":
-        return results.eaRank;
-      case "SOZ":
-        return results.sozRank;
-      case "DIL":
-        return results.dilRank;
-      case "TYT":
-      default:
-        return results.tytRank;
-    }
+  // Active multi-year rankings for selected field
+  const currentMultiYear = useMemo(() => {
+    return results.multiYearRanks[field] || results.multiYearRanks.SAY;
   }, [field, results]);
+
+  const currentRank = currentMultiYear.year2025;
 
   const currentPlacementScore = useMemo(() => {
     switch (field) {
-      case "SAY":
-        return results.sayPlacementScore;
-      case "EA":
-        return results.eaPlacementScore;
-      case "SOZ":
-        return results.sozPlacementScore;
-      case "DIL":
-        return results.dilPlacementScore;
+      case "SAY": return results.sayPlacementScore;
+      case "EA": return results.eaPlacementScore;
+      case "SOZ": return results.sozPlacementScore;
+      case "DIL": return results.dilPlacementScore;
       case "TYT":
-      default:
-        return results.tytPlacementScore;
+      default: return results.tytPlacementScore;
     }
   }, [field, results]);
 
   const currentRawScore = useMemo(() => {
     switch (field) {
-      case "SAY":
-        return results.sayRawScore;
-      case "EA":
-        return results.eaRawScore;
-      case "SOZ":
-        return results.sozRawScore;
-      case "DIL":
-        return results.dilRawScore;
+      case "SAY": return results.sayRawScore;
+      case "EA": return results.eaRawScore;
+      case "SOZ": return results.sozRawScore;
+      case "DIL": return results.dilRawScore;
       case "TYT":
-      default:
-        return results.tytRawScore;
+      default: return results.tytRawScore;
     }
   }, [field, results]);
+
+  // Program Matches
+  const programMatches = useMemo(() => {
+    return calculateProgramMatches(currentRank, field);
+  }, [currentRank, field]);
+
+  const filteredPrograms = useMemo(() => {
+    if (programFilter === "all") return programMatches;
+    return programMatches.filter((p) => p.status === programFilter);
+  }, [programMatches, programFilter]);
+
+  // AI Net Leverage (Sensitivity)
+  const netLeverage = useMemo(() => {
+    return calculateNetLeverage(inputs, field);
+  }, [inputs, field]);
 
   // Load from latest exam
   const handleLoadLatestExam = () => {
@@ -183,38 +201,38 @@ export function SimulatorPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
       {/* Top Header */}
-      <header className="mb-8 flex flex-col gap-4 border-b border-[var(--outline)] pb-6 md:flex-row md:items-end md:justify-between">
+      <header className="mb-6 flex flex-col gap-4 border-b border-[var(--outline)] pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="rounded-md bg-[var(--primary)] px-2.5 py-0.5 text-xs font-bold text-white">
-              2025 / 2026 ÖSYM Motoru
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="rounded-md bg-[var(--primary)] px-2.5 py-0.5 text-xs font-bold text-white shadow-2xs">
+              2023 • 2024 • 2025/2026 ÖSYM Dinamikleri
             </span>
             <span className="text-xs font-semibold text-[var(--muted)]">
-              YKS Sıralama & Net Simülatörü
+              Çok Yıllı YKS Sınav Simülatörü & Üniversite Eşleştirici
             </span>
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-[var(--ink)]">
-            Netlerini Simüle Et, Sıralamanı Gör
+            ÖSYM Simülatörü & Sıralama Analitiği
           </h1>
           <p className="mt-1 text-sm text-[var(--muted)] max-w-2xl">
-            Güncel ÖSYM katsayıları ve yığılma verileriyle TYT, AYT netlerinin ve OBP puanının yaklaşık Türkiye sıralamana etkisini anlık hesapla.
+            TYT ve AYT netlerini simüle et; 2024 zor sınav ve 2023 yığılma yıllarının gerçek ÖSYM karşılıklarını gör, hedef üniversitelerin kazanma olasılığını anında test et.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={handleLoadLatestExam}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--primary)] bg-[var(--surface-ai)] px-4 py-2.5 text-xs font-bold text-[var(--primary)] hover:bg-[#dce7d4] transition-all shadow-2xs active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--primary)] bg-[var(--surface-ai)] px-3.5 py-2.5 text-xs font-bold text-[var(--primary)] hover:bg-[#dce7d4] transition-all shadow-2xs active:scale-95"
           >
-            <Zap size={15} />
+            <Zap size={14} />
             <span>{hasLoadedLatestExam ? "Son Deneme Aktarıldı ✓" : "Son Denememi Aktar"}</span>
           </button>
           <button
             type="button"
             onClick={handleReset}
             title="Netleri Sıfırla"
-            className="inline-flex items-center gap-1 rounded-xl border border-[var(--outline)] bg-white px-3 py-2.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-all active:scale-95"
+            className="inline-flex items-center gap-1 rounded-xl border border-[var(--outline)] bg-white px-3 py-2.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)] transition-all active:scale-95 shadow-2xs"
           >
             <RotateCcw size={14} />
             <span>Sıfırla</span>
@@ -223,7 +241,7 @@ export function SimulatorPage() {
       </header>
 
       {/* Field Selector Tabs */}
-      <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {[
           { key: "SAY", label: "Sayısal (SAY)", badge: "TYT + SAY" },
           { key: "EA", label: "Eşit Ağırlık (EA)", badge: "TYT + EA" },
@@ -256,28 +274,106 @@ export function SimulatorPage() {
         })}
       </div>
 
-      {/* Mobile Live Quick Rank Banner (Sticky on small screens) */}
-      <div className="lg:hidden sticky top-[60px] z-10 -mx-4 px-4 py-2 bg-[var(--background)]/90 backdrop-blur-md border-b border-[var(--outline)] mb-6">
-        <div className="rounded-2xl bg-gradient-to-r from-[var(--primary)] to-[#3a4933] p-4 text-white shadow-md flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-extrabold tracking-wider text-white/80 block">
-              Tahmini {field} Sıralaması
-            </span>
-            <span className="font-display text-2xl font-black tracking-tight">
-              #{currentRank.toLocaleString("tr-TR")}
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] text-white/80 block">Yerleştirme</span>
-            <span className="font-display text-base font-bold">
-              {currentPlacementScore} P
-            </span>
-          </div>
+      {/* Quick Target Presets Bar */}
+      <div className="mb-8 p-3 rounded-2xl bg-white border border-[var(--outline)] shadow-xs flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--ink)]">
+          <Sparkles size={16} className="text-amber-500" />
+          <span>Hızlı Hedef Şablonları:</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => handleApplyPreset("top5k")}
+            className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-all active:scale-95"
+          >
+            🥇 İlk 5.000 (Tıp/Top Müh)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleApplyPreset("top20k")}
+            className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 text-xs font-bold hover:bg-indigo-100 transition-all active:scale-95"
+          >
+            🥈 İlk 20.000 (Hukuk/Diş/Müh)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleApplyPreset("top50k")}
+            className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition-all active:scale-95"
+          >
+            🥉 İlk 50.000 (Devlet Müh)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleApplyPreset("top100k")}
+            className="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold hover:bg-slate-100 transition-all active:scale-95"
+          >
+            🎯 İlk 100.000
+          </button>
         </div>
       </div>
 
-      {/* Main Grid: Left Inputs, Right Simulation Display */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+      {/* Multi-Year ÖSYM Comparison Highlight Row */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 2024: Zor Sınav */}
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-white border border-indigo-200 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-indigo-900 mb-2">
+            <span className="flex items-center gap-1.5">
+              <TrendingUp size={15} className="text-indigo-600" />
+              2024 ÖSYM (Zor / Seçici Yıl)
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px]">
+              Seçici Sınav
+            </span>
+          </div>
+          <div className="font-display text-3xl font-black text-indigo-950 tracking-tight">
+            #{currentMultiYear.year2024.toLocaleString("tr-TR")}
+          </div>
+          <p className="mt-1.5 text-xs text-indigo-700/80 leading-relaxed">
+            Zor matematik ve fen katsayılarının yüksek getirdiği en avantajlı senaryo.
+          </p>
+        </div>
+
+        {/* 2025/2026: Tahmini Standart */}
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-[var(--surface-ai)] to-white border-2 border-[var(--primary)] shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-[var(--primary)] mb-2">
+            <span className="flex items-center gap-1.5">
+              <Award size={15} />
+              2025 / 2026 (Tahmini Standart)
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--primary)] text-white text-[10px] font-bold">
+              Referans Sıra
+            </span>
+          </div>
+          <div className="font-display text-3xl font-black text-[var(--primary)] tracking-tight">
+            #{currentMultiYear.year2025.toLocaleString("tr-TR")}
+          </div>
+          <p className="mt-1.5 text-xs text-[var(--muted)] leading-relaxed">
+            Dengeli standart sapma ve son 3 yılın normalize edilmiş yığılma projeksiyonu.
+          </p>
+        </div>
+
+        {/* 2023: Kolay Sınav */}
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/80 to-white border border-amber-200 shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between text-xs font-bold text-amber-900 mb-2">
+            <span className="flex items-center gap-1.5">
+              <BarChart3 size={15} className="text-amber-600" />
+              2023 ÖSYM (Kolay / Yığılmalı Yıl)
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px]">
+              Yığılma Senaryosu
+            </span>
+          </div>
+          <div className="font-display text-3xl font-black text-amber-950 tracking-tight">
+            #{currentMultiYear.year2023.toLocaleString("tr-TR")}
+          </div>
+          <p className="mt-1.5 text-xs text-amber-700/80 leading-relaxed">
+            Sınavın kolay gelmesi ve yüksek netlerde yığılma oluşması durumundaki sıralama.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Grid: Left Inputs, Right Strategy & Matches */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_390px]">
         {/* Left Column: Net Inputs */}
         <div className="space-y-6">
           {/* SECTION 1: TYT Netleri */}
@@ -539,13 +635,59 @@ export function SimulatorPage() {
               </div>
             </div>
           </section>
+
+          {/* SECTION 4: AI Net Leverage Advisor (En Değerli Netler) */}
+          <section className="paper-card p-6 bg-white shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--outline)] pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-[var(--primary)]" />
+                <h3 className="font-display text-base font-bold text-[var(--ink)]">
+                  AI Net Kaldıraç Analizi ("+1 Net Kaç Kişi Öne Geçirir?")
+                </h3>
+              </div>
+              <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                Anlık Simülasyon
+              </span>
+            </div>
+
+            <p className="text-xs text-[var(--muted)] leading-relaxed">
+              Mevcut net seviyende en az eforla en yüksek sıralama sıçramasını yaptıracak dersler öncelik sırasıyla listelenmiştir:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {netLeverage.slice(0, 4).map((item, idx) => (
+                <div
+                  key={item.key}
+                  className="p-3 rounded-xl border border-[var(--outline)] bg-[#fbf9f5] flex items-center justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)] text-[10px] font-bold text-white">
+                        {idx + 1}
+                      </span>
+                      <strong className="text-xs font-bold text-[var(--ink)]">{item.testName}</strong>
+                    </div>
+                    <span className="text-[10px] text-[var(--muted)] ml-6">
+                      Mevcut: {item.currentNet} / {item.maxQuestions} Net
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-block rounded-md bg-emerald-100 text-emerald-800 px-2 py-0.5 text-xs font-extrabold">
+                      +{item.rankGain.toLocaleString("tr-TR")} sıra
+                    </span>
+                    <span className="text-[9px] text-emerald-700 block mt-0.5">/ +1 Net Başına</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Right Column: Live Results & Strategy */}
+        {/* Right Column: Live Results & Program Acceptance Matcher */}
         <aside className="space-y-6">
           {/* Main Predicted Rank Card */}
           <div className="paper-card p-6 bg-gradient-to-b from-white to-[#fbf9f5] border-2 border-[var(--primary)] shadow-md text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-[var(--primary)] text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-bl-xl">
+            <div className="absolute top-0 right-0 bg-[var(--primary)] text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-2xs">
               2025/2026 Tahmini
             </div>
 
@@ -577,7 +719,7 @@ export function SimulatorPage() {
             </div>
           </div>
 
-          {/* Target Comparison & AI Strategy Recommendation */}
+          {/* Target Comparison */}
           <div className="paper-card p-6 bg-white shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--outline)]">
               <div className="flex items-center gap-2">
@@ -624,7 +766,7 @@ export function SimulatorPage() {
               )}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <Link
                 href="/coach"
                 className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] text-white p-3 text-xs font-bold shadow-xs hover:bg-[#34402e] transition-colors"
@@ -636,11 +778,84 @@ export function SimulatorPage() {
             </div>
           </div>
 
+          {/* Program Acceptance Probability Matcher */}
+          <div className="paper-card p-6 bg-white shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--outline)]">
+              <div className="flex items-center gap-2">
+                <GraduationCap size={18} className="text-[var(--primary)]" />
+                <h3 className="font-display text-base font-bold text-[var(--ink)]">
+                  Kazanma İhtimali
+                </h3>
+              </div>
+              <span className="text-[10px] font-bold text-[var(--muted)]">
+                {filteredPrograms.length} Bölüm
+              </span>
+            </div>
+
+            {/* Filter pills */}
+            <div className="flex gap-1.5">
+              {(["all", "safe", "target", "risk"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setProgramFilter(f)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                    programFilter === f
+                      ? "bg-[var(--primary)] text-white"
+                      : "bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--ink)]"
+                  }`}
+                >
+                  {f === "all" ? "Tümü" : f === "safe" ? "Güvenli (%80+)" : f === "target" ? "Sınırda" : "Riskli"}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              {filteredPrograms.length === 0 ? (
+                <p className="text-xs text-[var(--muted)] text-center py-4">Bu filtrede bölüm bulunamadı.</p>
+              ) : (
+                filteredPrograms.map((prog) => (
+                  <div
+                    key={prog.id}
+                    className="p-3 rounded-xl border border-[var(--outline)] bg-[#fbf9f5] space-y-1.5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <strong className="text-xs font-bold text-[var(--ink)] block leading-tight">
+                          {prog.name}
+                        </strong>
+                        <span className="text-[10px] text-[var(--muted)]">
+                          {prog.university} ({prog.city})
+                        </span>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                          prog.status === "safe"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : prog.status === "target"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-rose-100 text-rose-800"
+                        }`}
+                      >
+                        %{prog.probability}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-[var(--muted)] pt-1 border-t border-[var(--outline)]/50">
+                      <span>2024 Taban: #{prog.baseRank2024.toLocaleString("tr-TR")}</span>
+                      <span>2023 Taban: #{prog.baseRank2023.toLocaleString("tr-TR")}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Quick Info Box */}
           <div className="p-4 rounded-xl border border-[var(--outline)] bg-[#fbf9f5] text-[11px] text-[var(--muted)] leading-relaxed flex items-start gap-2">
             <Info size={16} className="text-[var(--primary)] shrink-0 mt-0.5" />
             <p>
-              Hesaplamalar 2024 ÖSYM resmi standart sapma, test ağırlıkları ve yığılma verileri referans alınarak 2025/2026 sınav projeksiyonu olarak simüle edilmektedir.
+              Hesaplamalar 2024 ÖSYM resmi standart sapma, test katsayıları ve yığılma verileri referans alınarak 2025/2026 sınav projeksiyonu olarak simüle edilmektedir.
             </p>
           </div>
         </aside>
@@ -698,3 +913,4 @@ function NetSlider({
     </div>
   );
 }
+
