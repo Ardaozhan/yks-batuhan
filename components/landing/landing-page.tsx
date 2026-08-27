@@ -331,9 +331,8 @@ export function LandingPage() {
               <div className="paper-card p-4 sm:p-5 flex flex-col justify-between bg-[#fbf9f5] hover-lift">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-[var(--ink)] flex items-center gap-1.5">
-                      <ListTodo size={15} className="text-[var(--primary)]" />
-                      <span>Bugünkü Plan</span>
+                    <span className="text-xs font-bold text-[var(--ink)]">
+                      Bugünkü Plan
                     </span>
                     <span className="rounded bg-[var(--primary)] text-white text-[10px] px-2 py-0.5 font-bold">
                       %67 Tamamlandı

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { EmptyMistakesIllustration } from "@/components/ui/animated-illustrations";
 import { useToast } from "@/components/ui/toaster";
 
 interface MistakeItem {
@@ -184,9 +185,12 @@ export function MistakeTracker() {
       {/* Items List */}
       <div className="space-y-2.5">
         {items.length === 0 ? (
-          <p className="text-center py-6 text-xs text-[var(--muted)]">
-            Henüz kaydedilmiş eksik konu bulunmuyor.
-          </p>
+          <div className="text-center py-5">
+            <EmptyMistakesIllustration className="mb-2" />
+            <p className="text-xs text-[var(--muted)]">
+              Henüz kaydedilmiş eksik konu veya hata notu bulunmuyor.
+            </p>
+          </div>
         ) : (
           items.map((it) => (
             <div

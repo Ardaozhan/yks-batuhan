@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import {
   Calculator,
@@ -14,7 +15,7 @@ import {
   Timer,
   Trash2,
 } from "lucide-react";
-import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
+import { EmptyPlanIllustration } from "@/components/ui/animated-illustrations";
 import { defaultProfile } from "@/lib/mock-data";
 import {
   addDailyTask,
@@ -26,6 +27,11 @@ import {
   toggleTaskStatus,
 } from "@/lib/study-store";
 import type { DailyTask } from "@/types/study";
+
+const QuickAddDialog = dynamic(
+  () => import("@/components/forms/quick-add-dialog").then((m) => m.QuickAddDialog),
+  { ssr: false }
+);
 
 export function TodayDashboard() {
   const [tasks, setTasks] = useState<DailyTask[]>([]);
@@ -94,7 +100,7 @@ export function TodayDashboard() {
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, status: t.status === "completed" ? "pending" : "completed" }
+          ? { ...t, status: t.status === "completed" ? ("pending" as const) : ("completed" as const) }
           : t
       )
     );
@@ -204,18 +210,13 @@ export function TodayDashboard() {
         <div className="space-y-4">
           {/* Action Bar — cleanly aligned flex row */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between paper-card p-3.5 sm:p-4 bg-white/90">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-ai)] text-[var(--primary)]">
-                <CheckCircle2 size={18} />
-              </div>
-              <div>
-                <h2 className="font-display text-base sm:text-lg font-bold text-[var(--ink)] flex items-center gap-2">
-                  <span>Bugünkü Plan</span>
-                  <span className="rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-xs font-bold text-[var(--muted)]">
-                    {tasks.length}
-                  </span>
-                </h2>
-              </div>
+            <div>
+              <h2 className="font-display text-base sm:text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                <span>Bugünkü Plan</span>
+                <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-bold text-[var(--muted)]">
+                  {tasks.length}
+                </span>
+              </h2>
             </div>
 
             {/* Filter Tabs and Add Button */}
@@ -253,10 +254,8 @@ export function TodayDashboard() {
               Görevler yükleniyor...
             </div>
           ) : filteredTasks.length === 0 ? (
-            <div className="paper-card p-8 sm:p-12 text-center bg-white shadow-xs">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-ai)] text-[var(--primary)] border border-[#d7e8cb]">
-                <Target size={28} />
-              </div>
+            <div className="paper-card p-6 sm:p-10 text-center bg-white shadow-xs">
+              <EmptyPlanIllustration className="mb-2" />
               <h3 className="font-display text-base sm:text-lg font-bold text-[var(--ink)]">
                 {filter === "completed"
                   ? "Henüz tamamlanmış görev yok"

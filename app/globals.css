@@ -122,11 +122,24 @@ button { cursor: pointer; touch-action: manipulation; }
 
   .hover-lift {
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+    transform: translateZ(0);
+    will-change: transform, box-shadow;
   }
   .hover-lift:hover {
     transform: translateY(-4px);
     box-shadow: 0 14px 30px -10px rgba(82, 96, 73, 0.14);
     border-color: var(--primary);
+  }
+
+  .gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 80px;
   }
 
   @media (prefers-reduced-motion: reduce) {

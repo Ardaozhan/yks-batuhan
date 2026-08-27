@@ -27,10 +27,23 @@ import {
 import { appConfig } from "@/lib/config";
 import { defaultProfile } from "@/lib/mock-data";
 import { getProfile } from "@/lib/study-store";
+import dynamic from "next/dynamic";
 import type { UserProfile } from "@/types/study";
-import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
-import { CommandMenu } from "@/components/ui/command-menu";
-import { FeedbackDialog } from "@/components/ui/feedback-dialog";
+
+const QuickAddDialog = dynamic(
+  () => import("@/components/forms/quick-add-dialog").then((m) => m.QuickAddDialog),
+  { ssr: false }
+);
+
+const CommandMenu = dynamic(
+  () => import("@/components/ui/command-menu").then((m) => m.CommandMenu),
+  { ssr: false }
+);
+
+const FeedbackDialog = dynamic(
+  () => import("@/components/ui/feedback-dialog").then((m) => m.FeedbackDialog),
+  { ssr: false }
+);
 
 const primaryNav = [
   { href: "/today", label: "Bugün", icon: CalendarDays },

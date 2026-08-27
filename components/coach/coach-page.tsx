@@ -21,6 +21,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { AiThinkingOrb } from "@/components/ui/ai-thinking-orb";
 import {
   addDailyTask,
   getExams,
@@ -538,12 +539,7 @@ export function CoachPage() {
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2.5 text-xs text-[var(--muted)] py-2 px-1 animate-in fade-in">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--surface-ai)] text-[var(--primary)] animate-spin">
-                <Sparkles size={14} />
-              </div>
-              <span>AI Koç verilerini analiz ediyor ve yanıt hazırlıyor...</span>
-            </div>
+            <AiThinkingOrb label="AI Koç stratejini ve analizi hazırlıyor..." />
           )}
 
           <div ref={messagesEndRef} />

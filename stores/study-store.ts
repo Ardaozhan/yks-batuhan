@@ -90,40 +90,57 @@ export function updateProfile(partial: Partial<UserProfile>): UserProfile {
 
 // TASKS
 export async function getTodayTasks(): Promise<DailyTask[]> {
-  try {
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData?.user) {
-      const today = new Date().toISOString().slice(0, 10);
-      const { data, error } = await supabase
-        .from("daily_tasks")
-        .select(
-          "id, title, description, planned_questions, planned_minutes, status, priority, subjects(name), topics(name)"
-        )
-        .eq("date", today)
-        .order("order");
-      if (!error && data && data.length > 0) {
-        return (data as Array<Record<string, unknown>>).map((d) => ({
-          id: String(d.id),
-          title: String(d.title),
-          description:
-            typeof d.description === "string" && d.description
-              ? d.description
-              : d.planned_questions
-              ? `${d.planned_questions} Soru Hedefi`
-              : "Günlük Görev",
-          duration: d.planned_minutes ? `${d.planned_minutes} dk` : "45 dk",
-          status: (d.status as DailyTask["status"]) || "pending",
-          priority: (d.priority as DailyTask["priority"]) || "normal",
-          plannedQuestions: Number(d.planned_questions) || 30,
-          subject: (d.subjects as { name: string })?.name || "YKS",
-          topic: (d.topics as { name: string })?.name || "Çalisma",
-        }));
-      }
-    }
-  } catch {
-    // Supabase optional fallback
+  if (!memoryTasks) {
+    memoryTasks = getLocal<DailyTask[]>(STORAGE_KEYS.tasks, defaultTasks);
   }
+
+  // Background cloud synchronization
+  (async () => {
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id) {
+        const today = new Date().toISOString().slice(0, 10);
+        const { data, error } = await supabase
+          .from("daily_tasks")
+          .select("id, title, description, planned_questions, planned_minutes, status, priority, date")
+          .eq("user_id", userData.user.id)
+          .eq("date", today);
+
+        if (!error && data && data.length > 0) {
+          const remoteTasks: DailyTask[] = (data as Array<Record<string, unknown>>).map((d) => {
+            const rawTitle = String(d.title || "");
+            const parts = rawTitle.split(":");
+            const subject = parts.length > 1 ? parts[0].trim() : "YKS";
+            const topic = parts.length > 1 ? parts.slice(1).join(":").trim() : rawTitle || "Çalışma";
+            return {
+              id: String(d.id),
+              title: rawTitle,
+              description:
+                typeof d.description === "string" && d.description
+                  ? d.description
+                  : d.planned_questions
+                  ? `${d.planned_questions} Soru Hedefi`
+                  : "Günlük Görev",
+              duration: d.planned_minutes ? `${d.planned_minutes} dk` : "45 dk",
+              status: (d.status as DailyTask["status"]) || "pending",
+              priority: (d.priority as DailyTask["priority"]) || "normal",
+              plannedQuestions: Number(d.planned_questions) || 30,
+              subject,
+              topic,
+            };
+          });
+          memoryTasks = remoteTasks;
+          setLocal(STORAGE_KEYS.tasks, remoteTasks);
+        }
+      }
+    } catch {
+      // Silent offline-first fallback
+    }
+  })();
+
+  return memoryTasks;
+}
 
 function getTasksSnapshot(): DailyTask[] {
   if (!memoryTasks) {
@@ -295,6 +312,30 @@ export function addSubject(subject: Omit<Subject, "id" | "topicCount" | "complet
   memorySubjects = updated;
   setLocal(STORAGE_KEYS.subjects, updated);
   return newSub;
+}
+
+export function deleteSubject(subjectId: string): Subject[] {
+  const current = getSubjects();
+  const updated = current.filter((s) => s.id !== subjectId);
+  memorySubjects = updated;
+  setLocal(STORAGE_KEYS.subjects, updated);
+
+  // Also remove associated topics from store
+  if (memoryTopics) {
+    memoryTopics = memoryTopics.filter((t) => t.subjectId !== subjectId);
+    setLocal(STORAGE_KEYS.topics, memoryTopics);
+  } else {
+    const rawTopics = getLocal<Topic[]>(STORAGE_KEYS.topics, defaultTopics);
+    const updatedTopics = rawTopics.filter((t) => t.subjectId !== subjectId);
+    memoryTopics = updatedTopics;
+    setLocal(STORAGE_KEYS.topics, updatedTopics);
+  }
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("study_store_change"));
+  }
+
+  return updated;
 }
 
 // TOPICS

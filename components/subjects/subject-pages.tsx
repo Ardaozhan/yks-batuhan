@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
@@ -11,10 +12,13 @@ import {
   Plus,
   Sparkles,
   Target,
+  Trash2,
 } from "lucide-react";
 import { QuickAddDialog } from "@/components/forms/quick-add-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   addDailyTask,
+  deleteSubject,
   getSubjects,
   getTopics,
   toggleTopicStatus,
@@ -25,6 +29,7 @@ export function SubjectsPage() {
   const [subjectsList, setSubjectsList] = useState<Subject[]>(() => getSubjects());
   const [filter, setFilter] = useState<"all" | "TYT" | "AYT">("all");
   const [quickOpen, setQuickOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   useEffect(() => {
     const handleUpdate = () => setSubjectsList(getSubjects());
@@ -32,6 +37,13 @@ export function SubjectsPage() {
     window.addEventListener("study_store_change", handleUpdate);
     return () => window.removeEventListener("study_store_change", handleUpdate);
   }, []);
+
+  const handleDeleteSubject = () => {
+    if (!subjectToDelete) return;
+    const updated = deleteSubject(subjectToDelete.id);
+    setSubjectsList(updated);
+    setSubjectToDelete(null);
+  };
 
   const filtered = subjectsList.filter((s) => {
     if (filter === "all") return true;
@@ -99,16 +111,38 @@ export function SubjectsPage() {
       {/* Grid of Subject Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((subject) => (
-          <SubjectCard key={subject.id} subject={subject} />
+          <SubjectCard
+            key={subject.id}
+            subject={subject}
+            onDelete={(s) => setSubjectToDelete(s)}
+          />
         ))}
       </div>
 
       {quickOpen && <QuickAddDialog onClose={() => setQuickOpen(false)} />}
+
+      {/* Delete Subject Confirm Dialog */}
+      <ConfirmDialog
+        open={!!subjectToDelete}
+        title={`${subjectToDelete?.name || "Ders"} Silinsin mi?`}
+        description="Bu dersi sildiğinizde, derse ait tüm konular ve kayıtlı ilerleme bilgileri kalıcı olarak silinecektir."
+        confirmText="Evet, Dersi Sil"
+        cancelText="Vazgeç"
+        danger
+        onConfirm={handleDeleteSubject}
+        onCancel={() => setSubjectToDelete(null)}
+      />
     </div>
   );
 }
 
-function SubjectCard({ subject }: { subject: Subject }) {
+function SubjectCard({
+  subject,
+  onDelete,
+}: {
+  subject: Subject;
+  onDelete: (s: Subject) => void;
+}) {
   return (
     <Link
       href={`/subjects/${subject.id}`}
@@ -127,7 +161,18 @@ function SubjectCard({ subject }: { subject: Subject }) {
           >
             {subject.examType}
           </span>
-          <MoreVertical size={16} className="text-[var(--muted)]" />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(subject);
+            }}
+            title={`${subject.name} dersini sil`}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--muted)] opacity-60 hover:opacity-100 hover:text-[var(--danger)] hover:bg-[#fff0ee] transition-all touch-manipulation"
+          >
+            <Trash2 size={15} />
+          </button>
         </div>
 
         <h2 className="mt-3 font-display text-xl font-bold text-[var(--ink)]">
@@ -166,6 +211,7 @@ function SubjectCard({ subject }: { subject: Subject }) {
 }
 
 export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
+  const router = useRouter();
   const decodedSubjectId = decodeURIComponent(subjectId);
   const [subject, setSubject] = useState<Subject | null>(() => {
     const list = getSubjects();
@@ -174,6 +220,7 @@ export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
   const [topics, setTopics] = useState<Topic[]>(() => getTopics(decodedSubjectId));
   const [filter, setFilter] = useState<"all" | "in_progress" | "completed">("all");
   const [quickOpen, setQuickOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -194,6 +241,13 @@ export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
     if (updatedSub) setSubject(updatedSub);
   };
 
+  const handleDeleteThisSubject = () => {
+    if (!subject) return;
+    deleteSubject(subject.id);
+    setConfirmDeleteOpen(false);
+    router.push("/subjects");
+  };
+
   const filteredTopics = topics.filter((t) => {
     if (filter === "in_progress") return t.status === "in_progress";
     if (filter === "completed") return t.status === "completed";
@@ -204,14 +258,25 @@ export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
 
   return (
     <div className="mx-auto max-w-[1040px] px-4 py-6 md:px-10 md:py-10">
-      {/* Back Link */}
-      <Link
-        href="/subjects"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--primary)] transition-colors mb-4"
-      >
-        <ArrowLeft size={16} />
-        <span>Derslerime dön</span>
-      </Link>
+      {/* Top Bar: Back Link & Delete Subject */}
+      <div className="flex items-center justify-between mb-4">
+        <Link
+          href="/subjects"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--primary)] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          <span>Derslerime dön</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setConfirmDeleteOpen(true)}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted)] hover:text-[var(--danger)] px-2.5 py-1.5 rounded-lg hover:bg-[#fff0ee] transition-colors"
+        >
+          <Trash2 size={14} />
+          <span>Dersi Sil</span>
+        </button>
+      </div>
 
       {/* Header with AI Suggestion */}
       <div className="paper-card p-6 md:p-8 bg-white mb-6">
@@ -368,6 +433,17 @@ export function SubjectDetailPage({ subjectId }: { subjectId: string }) {
       </div>
 
       {quickOpen && <QuickAddDialog onClose={() => setQuickOpen(false)} />}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title={`${subject.name} Dersini Silmek İstiyor musun?`}
+        description="Bu dersi sildiğinizde, derse ait tüm konular ve kayıtlı ilerleme bilgileri kalıcı olarak silinecektir."
+        confirmText="Evet, Dersi Sil"
+        cancelText="Vazgeç"
+        danger
+        onConfirm={handleDeleteThisSubject}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { calculateNet, formatNet, totalNet } from "@/lib/analytics";
+import { EmptyExamsIllustration } from "@/components/ui/animated-illustrations";
 import { addExam, getExams } from "@/lib/study-store";
 import type { Exam, ExamResult, ExamType } from "@/types/study";
 
@@ -101,10 +102,8 @@ export function ExamsPage() {
 
       {/* Exam Cards */}
       {filtered.length === 0 ? (
-        <div className="paper-card p-12 text-center bg-white shadow-xs">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-ai)] text-[var(--primary)]">
-            <Award size={28} />
-          </div>
+        <div className="paper-card p-6 sm:p-10 text-center bg-white shadow-xs">
+          <EmptyExamsIllustration className="mb-2" />
           <h3 className="font-display text-lg font-bold text-[var(--ink)]">
             Henüz deneme sınavı eklenmedi
           </h3>
