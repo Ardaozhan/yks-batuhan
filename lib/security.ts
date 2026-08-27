@@ -23,6 +23,11 @@ if (typeof setInterval !== "undefined") {
 export interface RateLimitOptions {
   limit?: number; // max requests per window
   windowMs?: number; // window duration in ms
+  skipEnvBypass?: boolean; // force rate limit check even in test environments
+}
+
+export function resetRateLimits() {
+  rateLimitStore.clear();
 }
 
 /**
@@ -49,8 +54,8 @@ export function checkRateLimit(
   prefix = "ai",
   options: RateLimitOptions = {}
 ): { success: boolean; response?: NextResponse } {
-  // Allow test environments to bypass rate limiting
-  if (process.env.NODE_ENV === "test" || process.env.VITEST === "true") {
+  // Allow test environments to bypass rate limiting unless explicitly testing it
+  if (!options.skipEnvBypass && (process.env.NODE_ENV === "test" || process.env.VITEST === "true")) {
     return { success: true };
   }
 
