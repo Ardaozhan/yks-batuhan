@@ -33,13 +33,16 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/^['"]|['"]$/g, "").trim();
+  const key = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "").replace(/^['"]|['"]$/g, "").trim();
+
+  if (!url || !key) {
     return response;
   }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    url,
+    key,
     {
       cookies: {
         getAll() {

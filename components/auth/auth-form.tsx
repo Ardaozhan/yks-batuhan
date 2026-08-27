@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { appConfig } from "@/lib/config";
@@ -23,6 +23,30 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
   const isLogin = mode === "login";
+
+  // Check existing session or auth state change to instantly redirect
+  useEffect(() => {
+    if (!configured) return;
+    const supabase = createClient();
+
+    // Check active session on mount
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user && isLogin) {
+        window.location.replace("/today");
+      }
+    });
+
+    // Listen to realtime auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && (event === "SIGNED_IN" || event === "USER_UPDATED") && isLogin) {
+        window.location.replace("/today");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [configured, isLogin]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -46,17 +70,26 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           password: parsed.data.password,
           options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
-    setLoading(false);
+
     if (result.error) {
+      setLoading(false);
       setError(result.error.message);
       return;
     }
+
     setMessage(
       isLogin
-        ? "Giriş başarılı. Yönlendiriliyorsun..."
+        ? "Giriş başarılı. Çalışma alanına yönlendiriliyorsun..."
         : "Kaydı tamamlamak için e-posta adresini doğrula."
     );
-    if (isLogin) router.push("/today");
+
+    if (isLogin) {
+      router.refresh();
+      // Hard navigation ensures fresh session cookies are sent in HTTP headers across all devices
+      window.location.replace("/today");
+    } else {
+      setLoading(false);
+    }
   }
 
   return (
